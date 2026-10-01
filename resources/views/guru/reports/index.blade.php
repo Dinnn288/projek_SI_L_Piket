@@ -17,7 +17,7 @@
             <tbody>
                 @foreach ($waiting as $report)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ ($waiting->firstItem() ?? 0) + $loop->index }}</td>
                         <td>{{ $report->title }}</td>
                         <td>{{ $report->category?->name }} ({{ $report->priority }})</td>
                         <td>{{ $report->student?->userBaru?->name }} / {{ $report->schoolClass?->name }}</td>
@@ -29,6 +29,7 @@
             </tbody>
         </table>
         </div>
+        <x-pagination :paginator="$waiting" />
     @endif
 </div>
 
@@ -46,7 +47,7 @@
             <tbody>
                 @foreach ($continued as $report)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ ($continued->firstItem() ?? 0) + $loop->index }}</td>
                         <td>{{ $report->title }}</td>
                         <td>{{ $report->category?->name }} ({{ $report->priority }})</td>
                         <td>{{ $report->student?->userBaru?->name }} / {{ $report->schoolClass?->name }}</td>
@@ -58,6 +59,7 @@
             </tbody>
         </table>
         </div>
+        <x-pagination :paginator="$continued" />
     @endif
 </div>
 
@@ -72,7 +74,7 @@
             <tbody>
                 @foreach ($mine as $report)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ ($mine->firstItem() ?? 0) + $loop->index }}</td>
                         <td>{{ $report->title }}</td>
                         <td>{{ $report->category?->name }}</td>
                         <td><span class="badge badge-proses">{{ $report->status }}</span></td>
@@ -84,6 +86,7 @@
             </tbody>
         </table>
         </div>
+        <x-pagination :paginator="$mine" />
     @endif
 </div>
 @endsection

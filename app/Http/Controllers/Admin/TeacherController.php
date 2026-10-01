@@ -15,7 +15,7 @@ class TeacherController extends Controller
 {
     public function index(): View
     {
-        $teachers = Teacher::with(['userBaru'])->orderBy('nip')->get();
+        $teachers = Teacher::with(['userBaru'])->orderBy('nip')->paginate(10)->withQueryString();
 
         return view('admin.teachers.index', compact('teachers'));
     }

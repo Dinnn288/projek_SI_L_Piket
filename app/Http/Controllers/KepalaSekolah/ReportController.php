@@ -24,7 +24,7 @@ class ReportController extends Controller
             ->with(['student.userBaru', 'schoolClass', 'category', 'assignedTeacher.userBaru', 'attachments'])
             ->with(['histories' => fn ($q) => $q->where('action', 'forwarded')->latest('id')->limit(1)])
             ->latest()
-            ->get();
+            ->paginate(10)->withQueryString();
 
         return view('kepala-sekolah.reports.index', compact('reports'));
     }

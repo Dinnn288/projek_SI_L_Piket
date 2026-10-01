@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Report;
+use App\Models\Setting;
 use App\Models\Teacher;
 use Carbon\Carbon;
 
@@ -12,18 +13,36 @@ use Carbon\Carbon;
  * Struktur aktual duty_schedules: id, teacher_id, day (enum
  * senin|selasa|rabu|kamis|jumat|sabtu), timestamps. Tidak ada kolom
  * jam_mulai/jam_selesai, sehingga penjadwalan bersifat HARIAN dan
- * jam operasional 07.00-16.00 ditegakkan di level aplikasi dengan
- * waktu aplikasi (config/app.php timezone) yang sudah ada.
+ * jam operasional ditegakkan di level aplikasi memakai pengaturan
+ * Admin (settings: operational_start_time/operational_end_time,
+ * default 07:00-16:00) dengan waktu server Asia/Jakarta.
  */
 class GuruDutyService
 {
-    public const START = '07:00';
+    public const TIMEZONE = 'Asia/Jakarta';
 
-    public const END = '16:00';
+    public const DEFAULT_START = '07:00';
+
+    public const DEFAULT_END = '16:00';
+
+    public static function start(): string
+    {
+        return (string) Setting::get('operational_start_time', self::DEFAULT_START);
+    }
+
+    public static function end(): string
+    {
+        return (string) Setting::get('operational_end_time', self::DEFAULT_END);
+    }
+
+    public static function now(): Carbon
+    {
+        return Carbon::now(self::TIMEZONE);
+    }
 
     public static function todayDay(): ?string
     {
-        return match ((int) Carbon::now()->dayOfWeek) {
+        return match ((int) self::now()->dayOfWeek) {
             1 => 'senin',
             2 => 'selasa',
             3 => 'rabu',
@@ -34,11 +53,16 @@ class GuruDutyService
         };
     }
 
-    public static function isWithinHours(): bool
+    public static function isWithinHours(?Carbon $at = null): bool
     {
-        $now = Carbon::now()->format('H:i');
+        $now = ($at ? $at->copy()->setTimezone(self::TIMEZONE) : self::now())->format('H:i');
 
-        return $now >= self::START && $now <= self::END;
+        return $now >= self::start() && $now <= self::end();
+    }
+
+    public static function isWithinHoursAt(string $time): bool
+    {
+        return $time >= self::start() && $time <= self::end();
     }
 
     public static function isOnDutyDay(Teacher $teacher): bool
@@ -62,7 +86,7 @@ class GuruDutyService
         }
 
         if (! self::isWithinHours()) {
-            return ['ok' => false, 'message' => 'Pengambilan laporan hanya dapat dilakukan pada jam piket 07.00-16.00.'];
+            return ['ok' => false, 'message' => 'Pengambilan laporan hanya dapat dilakukan pada jam piket '.str_replace(':', '.', self::start()).'-'.str_replace(':', '.', self::end()).'.'];
         }
 
         return ['ok' => true, 'message' => ''];

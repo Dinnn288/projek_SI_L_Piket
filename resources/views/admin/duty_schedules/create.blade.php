@@ -3,7 +3,7 @@
 @section('title', 'Tambah Jadwal Guru Piket')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Tambah Jadwal Guru Piket</h1>
     <p style="color: #5d6d7e; margin-top: 6px;">Satu hari dapat memiliki lebih dari satu guru piket. Guru yang sama tidak boleh duplikat pada hari yang sama.</p>
     <form method="POST" action="{{ route('admin.duty-schedules.store') }}" style="margin-top: 24px;">
@@ -34,3 +34,4 @@
     </form>
 </div>
 @endsection
+

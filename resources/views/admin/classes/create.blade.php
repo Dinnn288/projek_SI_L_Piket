@@ -3,7 +3,7 @@
 @section('title', 'Tambah Kelas')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Tambah Kelas</h1>
     <form method="POST" action="{{ route('admin.classes.store') }}" style="margin-top: 24px;">
         @csrf
@@ -32,3 +32,4 @@
     </form>
 </div>
 @endsection
+

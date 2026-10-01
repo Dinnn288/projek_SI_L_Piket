@@ -3,7 +3,7 @@
 @section('title', 'Buat Laporan')
 
 @section('content')
-<div class="card">
+<div class="sl-card">
     <h1 style="font-size: 22px; color: #1f3d2b;">Buat Laporan</h1>
     <p style="color: #5d6d7e; margin-top: 6px;">Lokasi: {{ $student->schoolClass?->name ?? '-' }} (otomatis dari data kelas, tidak dapat diubah)</p>
     <form method="POST" action="{{ route('siswa.reports.store') }}" enctype="multipart/form-data" style="margin-top: 18px;">
@@ -38,3 +38,4 @@
     </form>
 </div>
 @endsection
+

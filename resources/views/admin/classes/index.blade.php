@@ -3,13 +3,13 @@
 @section('title', 'Manajemen Kelas')
 
 @section('content')
-<div class="welcome-card" style="max-width: none;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+<div class="sl-card">
+    <div class="sl-card-head">
         <h1>Manajemen Kelas</h1>
         <a href="{{ route('admin.classes.create') }}" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">Tambah Kelas</a>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; background: white;">
+    <x-admin-table>
         <thead>
             <tr style="background: #f5f6fa;">
                 <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e1e8ed;">No</th>
@@ -24,14 +24,13 @@
         <tbody>
             @forelse ($classes as $schoolClass)
                 <tr>
-                    <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $loop->iteration }}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ ($classes->firstItem() ?? 0) + $loop->index }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schoolClass->name }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schoolClass->major?->name }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schoolClass->status === 'aktif' ? 'Aktif' : 'Nonaktif' }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schoolClass->students_count }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schoolClass->created_at?->format('d M Y') }}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">
-                        <a href="{{ route('admin.classes.edit', $schoolClass) }}" style="margin-right: 12px;">Edit</a>
+                    <td class="sl-actions"><a href="{{ route('admin.classes.edit', $schoolClass) }}" style="margin-right: 12px;">Edit</a>
                         <form method="POST" action="{{ route('admin.classes.destroy', $schoolClass) }}" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini?');">
                             @csrf
                             @method('DELETE')
@@ -45,6 +44,12 @@
                 </tr>
             @endforelse
         </tbody>
-    </table>
+    </x-admin-table>
+    <x-pagination :paginator="$classes" />
 </div>
 @endsection
+
+
+
+
+

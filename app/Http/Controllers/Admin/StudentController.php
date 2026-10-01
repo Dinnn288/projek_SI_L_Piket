@@ -16,7 +16,7 @@ class StudentController extends Controller
 {
     public function index(): View
     {
-        $students = Student::with(['userBaru', 'schoolClass.major'])->orderBy('nis')->get();
+        $students = Student::with(['userBaru', 'schoolClass.major'])->orderBy('nis')->paginate(10)->withQueryString();
 
         return view('admin.students.index', compact('students'));
     }

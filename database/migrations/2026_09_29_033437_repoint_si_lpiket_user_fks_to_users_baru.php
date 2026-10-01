@@ -31,6 +31,11 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Selaraskan PK users_baru dengan kolom FK (unsigned).
+        // Skip aman pada fresh DB: tabel dibuat oleh migration base dengan tipe yang sudah benar.
+        if (! Schema::hasTable('users_baru') || ! Schema::hasColumn('users_baru', 'id')) {
+            return;
+        }
+
         DB::statement('ALTER TABLE `users_baru` MODIFY `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT');
 
         // 2. Re-point 5 FK ke users_baru.

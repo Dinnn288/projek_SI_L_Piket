@@ -3,7 +3,7 @@
 @section('title', 'Tambah Kategori')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Tambah Kategori</h1>
     <form method="POST" action="{{ route('admin.report-categories.store') }}" style="margin-top: 24px;">
         @csrf
@@ -35,3 +35,4 @@
     </form>
 </div>
 @endsection
+

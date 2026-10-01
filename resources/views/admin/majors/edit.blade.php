@@ -3,7 +3,7 @@
 @section('title', 'Edit Jurusan')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Edit Jurusan</h1>
     <form method="POST" action="{{ route('admin.majors.update', $major) }}" style="margin-top: 24px;">
         @csrf
@@ -24,3 +24,4 @@
     </form>
 </div>
 @endsection
+

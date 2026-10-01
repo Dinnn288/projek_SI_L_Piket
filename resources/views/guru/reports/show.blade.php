@@ -3,7 +3,7 @@
 @section('title', 'Detail Laporan Piket')
 
 @section('content')
-<div class="card">
+<div class="sl-card">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
         <h1 style="font-size: 22px; color: #1a3d5c;">{{ $report->title }}</h1>
         @if ($report->status === 'menunggu')
@@ -92,3 +92,4 @@
     </div>
 </div>
 @endsection
+

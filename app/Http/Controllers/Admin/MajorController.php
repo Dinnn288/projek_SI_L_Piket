@@ -12,7 +12,7 @@ class MajorController extends Controller
 {
     public function index(): View
     {
-        $majors = Major::withCount('classes')->orderBy('name')->get();
+        $majors = Major::withCount('classes')->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.majors.index', compact('majors'));
     }

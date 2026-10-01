@@ -15,7 +15,7 @@
             <tbody>
                 @foreach ($reports as $report)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ ($reports->firstItem() ?? 0) + $loop->index }}</td>
                         <td>{{ $report->title }}</td>
                         <td>{{ $report->student?->userBaru?->name }} / {{ $report->schoolClass?->name }}</td>
                         <td>{{ $report->category?->name }} ({{ $report->priority }})</td>
@@ -29,6 +29,7 @@
             </tbody>
         </table>
         </div>
+        <x-pagination :paginator="$reports" />
     @endif
 </div>
 @endsection

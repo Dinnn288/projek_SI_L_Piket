@@ -15,13 +15,7 @@ class DashboardController extends Controller
 {
     private function currentTeacher(Request $request): Teacher
     {
-        $teacher = $request->user()->teacher()->first();
-
-        if (! $teacher) {
-            abort(403, 'Data guru tidak ditemukan.');
-        }
-
-        return $teacher;
+        return Teacher::resolveForUser($request->user());
     }
 
     public function index(Request $request): View
@@ -70,10 +64,15 @@ class DashboardController extends Controller
             ->where('is_read', false)
             ->count();
 
+        $operationalStart = GuruDutyService::start();
+        $operationalEnd = GuruDutyService::end();
+        $serverNow = GuruDutyService::now();
+
         return view('guru.dashboard', compact(
             'teacher', 'day', 'onDutyDay', 'withinHours',
             'waiting', 'waitingCount', 'continued', 'continuedCount',
-            'mine', 'mineActive', 'mineTotal', 'notifications', 'unreadCount'
+            'mine', 'mineActive', 'mineTotal', 'notifications', 'unreadCount',
+            'operationalStart', 'operationalEnd', 'serverNow'
         ));
     }
 }

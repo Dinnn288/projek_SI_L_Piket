@@ -3,16 +3,16 @@
 @section('title', 'Dashboard Kepala Sekolah')
 
 @section('content')
-<div class="card">
+<div class="sl-card">
     <h1 style="font-size: 24px; color: #4a235a;">Halo, {{ auth()->user()->name }}</h1>
     <p style="color: #5d6d7e; margin-top: 6px;">Laporan yang diteruskan Guru Piket untuk ditindaklanjuti.</p>
-    <div class="grid">
+    <div class="sl-grid">
         <div class="stat"><h3>Laporan Diteruskan</h3><div class="value">{{ $forwardedCount }}</div></div>
         <div class="stat"><h3>Laporan Selesai</h3><div class="value">{{ $completedCount }}</div></div>
     </div>
 </div>
 
-<div class="card" style="margin-top: 20px;">
+<div class="sl-card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2 style="font-size: 18px; color: #4a235a;">Laporan Diteruskan Terbaru</h2>
         <a href="{{ route('kepala-sekolah.reports.index') }}" class="btn">Lihat Semua</a>
@@ -40,7 +40,7 @@
     @endif
 </div>
 
-<div class="card" style="margin-top: 20px;">
+<div class="sl-card">
     <h2 style="font-size: 18px; color: #4a235a;">🔔 Notifikasi ({{ $unreadCount ?? 0 }} belum dibaca)</h2>
     @if (($notifications ?? collect())->isEmpty())
         <p style="color: #7f8c8d; margin-top: 10px;">Belum ada notifikasi.</p>
@@ -59,3 +59,4 @@
     @endif
 </div>
 @endsection
+

@@ -3,7 +3,7 @@
 @section('title', 'Edit Jadwal Guru Piket')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Edit Jadwal Guru Piket</h1>
     <form method="POST" action="{{ route('admin.duty-schedules.update', $dutySchedule) }}" style="margin-top: 24px;">
         @csrf
@@ -34,3 +34,4 @@
     </form>
 </div>
 @endsection
+

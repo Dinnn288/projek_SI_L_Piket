@@ -3,7 +3,7 @@
 @section('title', 'Detail Laporan')
 
 @section('content')
-<div class="card">
+<div class="sl-card">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
         <h1 style="font-size: 22px; color: #1f3d2b;">{{ $report->title }}</h1>
         @if ($report->status === 'menunggu')
@@ -46,3 +46,4 @@
     </div>
 </div>
 @endsection
+

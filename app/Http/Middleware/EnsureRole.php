@@ -16,7 +16,9 @@ class EnsureRole
     {
         $user = $request->user();
 
-        if (! $user || ! in_array($user->role, $roles, true)) {
+        $role = $user?->role;
+
+        if (! is_string($role) || ! in_array($role, $roles, true)) {
             abort(403);
         }
 

@@ -183,19 +183,36 @@ class AdminUsersFase12ATest extends TestCase
 
     public function test_safe_delete_relation_protection(): void
     {
-        // User dengan relasi student tidak bisa dihapus
+        // Proteksi berlaku untuk student BERELASI (punya report).
+        // Student tanpa relasi memang boleh dihapus total (profil+akun).
         $siswaUser = UserBaru::where('username', 'f12a_siswa')->firstOrFail();
-        $classId = \App\Models\SchoolClass::value('id');
-        if ($classId && ! Student::where('user_id', $siswaUser->id)->exists()) {
-            Student::create(['user_id' => $siswaUser->id, 'nis' => 'F12ANIS001', 'class_id' => $classId]);
-            $createdStudent = true;
-        } else {
-            $createdStudent = false;
+        $student = Student::where('user_id', $siswaUser->id)->first();
+        $createdReport = false;
+        if ($student && ! $student->reports()->exists()) {
+            $catId = (int) \App\Models\ReportCategory::value('id');
+            if ($student && $catId) {
+                \App\Models\Report::create([
+                    'student_id' => $student->id, 'class_id' => $student->class_id,
+                    'category_id' => $catId, 'title' => 'T-F12A-Guard',
+                    'description' => 'd', 'location' => 'l',
+                    'priority' => 'rendah', 'status' => 'menunggu',
+                ]);
+                $createdReport = true;
+            }
         }
-        $this->actingAs($this->admin())->delete('/admin/users/'.$siswaUser->id)->assertSessionHas('error');
-        $this->assertNotNull(UserBaru::find($siswaUser->id));
-        if (! empty($createdStudent)) {
-            Student::where('user_id', $siswaUser->id)->delete();
+        $student = Student::where('user_id', $siswaUser->id)->first();
+        if ($student && $student->reports()->exists()) {
+            $this->actingAs($this->admin())->delete('/admin/users/'.$siswaUser->id)->assertSessionHas('error');
+            $this->assertNotNull(UserBaru::find($siswaUser->id));
+        }
+        if (! empty($createdReport)) {
+            $rep = \App\Models\Report::where('title', 'T-F12A-Guard')->first();
+            if ($rep) {
+                \App\Models\ReportHistory::where('report_id', $rep->id)->delete();
+                \App\Models\ReportAttachment::where('report_id', $rep->id)->delete();
+                \App\Models\Notification::where('report_id', $rep->id)->delete();
+                $rep->delete();
+            }
         }
         // User tanpa relasi bisa dihapus
         $plain = UserBaru::create(['name' => 'Plain F12A', 'username' => 'f12a_created_4', 'password' => Hash::make('password123'), 'role' => 'guru', 'status' => 'aktif']);

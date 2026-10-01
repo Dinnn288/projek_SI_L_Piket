@@ -49,7 +49,19 @@ class SiswaReportStep1Test extends TestCase
 
         $stA = Student::where('user_id', $siswaA->id)->first();
         if (! $stA) {
-            $stA = Student::create(['user_id' => $siswaA->id, 'nis' => 'F6S1NIS001', 'class_id' => $class->id, 'phone' => '081']);
+            // Sisa run sebelumnya: user lama tanpa student tetapi NIS dipakai
+            // student yatim ber-reports (RESTRICT). Pakai ulang student sisa
+            // bila kelasnya cocok; hanya buat baru bila NIS benar-benar bebas.
+            $orphan = Student::where('nis', 'F6S1NIS001')->first();
+            if ($orphan && (int) $orphan->class_id === (int) $class->id) {
+                $orphan->user_id = $siswaA->id;
+                $orphan->phone = '081';
+                $orphan->save();
+                $stA = $orphan->fresh();
+            } else {
+                Student::where('nis', 'F6S1NIS001')->whereDoesntHave('reports')->delete();
+                $stA = Student::create(['user_id' => $siswaA->id, 'nis' => 'F6S1NIS001', 'class_id' => $class->id, 'phone' => '081']);
+            }
         }
         $stB = Student::where('user_id', $siswaB->id)->first();
         if (! $stB) {

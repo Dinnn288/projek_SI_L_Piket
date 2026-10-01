@@ -38,7 +38,7 @@ class ReportController extends Controller
             ->with(['category', 'schoolClass'])
             ->withCount('attachments')
             ->latest()
-            ->get();
+            ->paginate(10)->withQueryString();
 
         return view('siswa.reports.index', compact('student', 'reports'));
     }

@@ -3,7 +3,7 @@
 @section('title', 'Edit Guru')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Edit Guru</h1>
     <form method="POST" action="{{ route('admin.teachers.update', $teacher) }}" style="margin-top: 24px;">
         @csrf
@@ -44,3 +44,4 @@
     </form>
 </div>
 @endsection
+

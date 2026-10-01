@@ -12,7 +12,7 @@ class ReportCategoryController extends Controller
 {
     public function index(): View
     {
-        $categories = ReportCategory::withCount('reports')->orderBy('name')->get();
+        $categories = ReportCategory::withCount('reports')->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.report_categories.index', compact('categories'));
     }

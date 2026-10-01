@@ -18,7 +18,7 @@
             <tbody>
                 @foreach ($reports as $report)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ ($reports->firstItem() ?? 0) + $loop->index }}</td>
                         <td>{{ $report->title }}</td>
                         <td>{{ $report->category?->name }} ({{ $report->priority }})</td>
                         <td style="max-width: 240px;">{{ \Illuminate\Support\Str::limit($report->description, 80) }}<br><small style="color: #7f8c8d;">{{ $report->schoolClass?->name }} - {{ $report->location }}</small></td>
@@ -39,6 +39,7 @@
             </tbody>
         </table>
         </div>
+        <x-pagination :paginator="$reports" />
     @endif
 </div>
 @endsection

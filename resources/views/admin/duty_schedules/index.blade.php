@@ -3,7 +3,7 @@
 @section('title', 'Manajemen Jadwal Guru Piket')
 
 @section('content')
-<div class="welcome-card" style="max-width: none;">
+<div class="sl-card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <h1>Manajemen Jadwal Guru Piket</h1>
         <a href="{{ route('admin.duty-schedules.create') }}" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">Tambah Jadwal</a>
@@ -18,7 +18,7 @@
         @if (($grouped[$day] ?? collect())->isEmpty())
             <p style="color: #7f8c8d;">Belum ada guru piket.</p>
         @else
-            <table style="width: 100%; border-collapse: collapse; background: white; margin-bottom: 8px;">
+            <x-admin-table>
                 <thead>
                     <tr style="background: #f5f6fa;">
                         <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e1e8ed;">ID</th>
@@ -33,8 +33,7 @@
                             <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schedule->id }}</td>
                             <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schedule->teacher?->userBaru?->name }}</td>
                             <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $schedule->teacher?->nip }}</td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">
-                                <a href="{{ route('admin.duty-schedules.edit', $schedule) }}" style="margin-right: 12px;">Edit</a>
+                            <td class="sl-actions"><a href="{{ route('admin.duty-schedules.edit', $schedule) }}" style="margin-right: 12px;">Edit</a>
                                 <form method="POST" action="{{ route('admin.duty-schedules.destroy', $schedule) }}" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jadwal ini?');">
                                     @csrf
                                     @method('DELETE')
@@ -44,7 +43,7 @@
                         </tr>
                     @endforeach
                 </tbody>
-            </table>
+            </x-admin-table>
         @endif
     @endforeach
 
@@ -53,3 +52,5 @@
     @endif
 </div>
 @endsection
+
+

@@ -10,15 +10,15 @@ return new class extends Migration
     {
         
 
-        DB::statement('ALTER TABLE `temporary_reporters` MODIFY `class_id` BIGINT UNSIGNED NOT NULL');
-        DB::statement('ALTER TABLE `temporary_reporters` MODIFY `student_id` BIGINT UNSIGNED NOT NULL');
-        DB::statement('ALTER TABLE `temporary_reporters` MODIFY `activated_by` BIGINT UNSIGNED NOT NULL');
-        DB::statement('ALTER TABLE `duty_schedules` MODIFY `teacher_id` BIGINT UNSIGNED NOT NULL');
-        DB::statement('ALTER TABLE `reports` MODIFY `category_id` BIGINT NOT NULL');
+        $this->modifyIfTableExists('temporary_reporters', 'class_id', 'BIGINT UNSIGNED NOT NULL');
+        $this->modifyIfTableExists('temporary_reporters', 'student_id', 'BIGINT UNSIGNED NOT NULL');
+        $this->modifyIfTableExists('temporary_reporters', 'activated_by', 'BIGINT UNSIGNED NOT NULL');
+        $this->modifyIfTableExists('duty_schedules', 'teacher_id', 'BIGINT UNSIGNED NOT NULL');
+        $this->modifyIfTableExists('reports', 'category_id', 'BIGINT UNSIGNED NOT NULL');
 
 
-        DB::statement('ALTER TABLE `reports` MODIFY `assigned_teacher_id` BIGINT UNSIGNED NULL');
-        DB::statement('ALTER TABLE `notifications` MODIFY `report_id` BIGINT UNSIGNED NULL');
+        $this->modifyIfTableExists('reports', 'assigned_teacher_id', 'BIGINT UNSIGNED NULL');
+        $this->modifyIfTableExists('notifications', 'report_id', 'BIGINT UNSIGNED NULL');
 
         
         $this->addUniqueIfMissing('students', 'user_id', 'students_user_id_unique');
@@ -77,6 +77,15 @@ return new class extends Migration
 
         $this->dropIndexIfExists('students', 'students_user_id_unique');
         $this->dropIndexIfExists('teachers', 'teachers_user_id_unique');
+    }
+
+    private function modifyIfTableExists(string $table, string $column, string $definition): void
+    {
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column)) {
+            return;
+        }
+
+        DB::statement("ALTER TABLE `{$table}` MODIFY `{$column}` {$definition}");
     }
 
     private function addForeignKey(

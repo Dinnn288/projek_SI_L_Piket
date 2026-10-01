@@ -3,13 +3,13 @@
 @section('title', 'Manajemen Siswa')
 
 @section('content')
-<div class="welcome-card" style="max-width: none;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+<div class="sl-card">
+    <div class="sl-card-head">
         <h1>Manajemen Siswa</h1>
         <a href="{{ route('admin.students.create') }}" style="background: #3498db; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">Tambah Siswa</a>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; background: white;">
+    <x-admin-table>
         <thead>
             <tr style="background: #f5f6fa;">
                 <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e1e8ed;">ID</th>
@@ -30,8 +30,7 @@
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $student->userBaru?->username }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $student->schoolClass?->name }}</td>
                     <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">{{ $student->userBaru?->status === 'aktif' ? 'Aktif' : 'Nonaktif' }}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #e1e8ed;">
-                        <a href="{{ route('admin.students.edit', $student) }}" style="margin-right: 12px;">Edit</a>
+                    <td class="sl-actions"><a href="{{ route('admin.students.edit', $student) }}" style="margin-right: 12px;">Edit</a>
                         <form method="POST" action="{{ route('admin.students.destroy', $student) }}" style="display: inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus siswa ini?');">
                             @csrf
                             @method('DELETE')
@@ -45,6 +44,11 @@
                 </tr>
             @endforelse
         </tbody>
-    </table>
+    </x-admin-table>
+    <x-pagination :paginator="$students" />
 </div>
 @endsection
+
+
+
+

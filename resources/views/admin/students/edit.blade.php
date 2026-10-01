@@ -3,7 +3,7 @@
 @section('title', 'Edit Siswa')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Edit Siswa</h1>
     <form method="POST" action="{{ route('admin.students.update', $student) }}" style="margin-top: 24px;">
         @csrf
@@ -53,3 +53,4 @@
     </form>
 </div>
 @endsection
+

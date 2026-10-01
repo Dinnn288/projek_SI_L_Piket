@@ -23,13 +23,7 @@ class ReportController extends Controller
 {
     private function currentTeacher(Request $request): Teacher
     {
-        $teacher = $request->user()->teacher()->first();
-
-        if (! $teacher) {
-            abort(403, 'Data guru tidak ditemukan.');
-        }
-
-        return $teacher;
+        return Teacher::resolveForUser($request->user());
     }
 
     public function index(Request $request): View
@@ -48,7 +42,7 @@ class ReportController extends Controller
                 ->with(['category', 'schoolClass', 'student.userBaru'])
                 ->withCount('attachments')
                 ->latest()
-                ->get();
+                ->paginate(10, ['*'], 'waiting_page')->withQueryString();
 
             $continued = Report::where('status', 'dalam_penanganan')
                 ->whereNotNull('assigned_teacher_id')
@@ -57,17 +51,22 @@ class ReportController extends Controller
                 ->with(['category', 'schoolClass', 'student.userBaru', 'assignedTeacher.userBaru'])
                 ->withCount('attachments')
                 ->latest()
-                ->get();
+                ->paginate(10, ['*'], 'continued_page')->withQueryString();
         }
 
         $mine = $teacher->assignedReports()
             ->with(['category', 'schoolClass'])
             ->withCount('attachments')
             ->latest()
-            ->get();
+            ->paginate(10, ['*'], 'mine_page')->withQueryString();
+
+        $operationalStart = GuruDutyService::start();
+        $operationalEnd = GuruDutyService::end();
+        $serverNow = GuruDutyService::now();
 
         return view('guru.reports.index', compact(
-            'teacher', 'day', 'onDutyDay', 'withinHours', 'waiting', 'continued', 'mine'
+            'teacher', 'day', 'onDutyDay', 'withinHours', 'waiting', 'continued', 'mine',
+            'operationalStart', 'operationalEnd', 'serverNow'
         ));
     }
 

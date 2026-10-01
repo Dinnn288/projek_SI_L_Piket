@@ -3,15 +3,15 @@
 @section('title', 'Dashboard Guru Piket')
 
 @section('content')
-<div class="card">
+<div class="sl-card">
     <h1 style="font-size: 24px; color: #1a3d5c;">Halo, {{ auth()->user()->name }}</h1>
-    <p style="color: #5d6d7e; margin-top: 6px;">Hari ini: {{ $day ?? 'di luar jadwal (minggu)' }} | Jam piket: 07.00-16.00 | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }}</p>
+    <p style="color: #5d6d7e; margin-top: 6px;">Hari ini: {{ $day ?? 'di luar jadwal (minggu)' }} | Jam Operasional: {{ str_replace(':', '.', $operationalStart ?? '07:00') }} - {{ str_replace(':', '.', $operationalEnd ?? '16:00') }} WIB | Waktu server: {{ ($serverNow ?? now())->format('d M Y H:i:s') }} WIB | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }}</p>
     @if (! $onDutyDay)
         <p style="margin-top: 10px; color: #b7950b;">Anda tidak terjadwal piket hari ini, sehingga laporan menunggu tidak ditampilkan dan tombol Ambil Laporan dinonaktifkan.</p>
     @elseif (! $withinHours)
-        <p style="margin-top: 10px; color: #b7950b;">Saat ini di luar jam piket 07.00-16.00. Laporan menunggu ditampilkan, tetapi pengambilan ditolak server.</p>
+        <p style="margin-top: 10px; color: #b7950b;">Saat ini di luar jam operasional {{ str_replace(':', '.', $operationalStart ?? '07:00') }}-{{ str_replace(':', '.', $operationalEnd ?? '16:00') }} WIB. Laporan menunggu ditampilkan, tetapi pengambilan ditolak server.</p>
     @endif
-    <div class="grid">
+    <div class="sl-grid">
         <div class="stat"><h3>Laporan menunggu (hari piket saya)</h3><div class="value">{{ $waitingCount }}</div></div>
         <div class="stat"><h3>Lanjutan dari hari sebelumnya</h3><div class="value">{{ $continuedCount }}</div></div>
         <div class="stat"><h3>Sedang saya tangani</h3><div class="value">{{ $mineActive }}</div></div>
@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<div class="card" style="margin-top: 20px;">
+<div class="sl-card">
     <h2 style="font-size: 18px; color: #1a3d5c;">🔔 Notifikasi ({{ $unreadCount ?? 0 }} belum dibaca)</h2>
     @if (($notifications ?? collect())->isEmpty())
         <p style="color: #7f8c8d; margin-top: 10px;">Belum ada notifikasi.</p>
@@ -38,7 +38,7 @@
     @endif
 </div>
 
-<div class="card" style="margin-top: 20px;">
+<div class="sl-card">
     <h2 style="font-size: 18px; color: #1a3d5c;">Laporan menunggu</h2>
     @if ($waiting->isEmpty())
         <p style="color: #7f8c8d; margin-top: 10px;">Tidak ada laporan menunggu untuk jadwal piket Anda.</p>
@@ -63,7 +63,7 @@
     @endif
 </div>
 
-<div class="card" style="margin-top: 20px;">
+<div class="sl-card">
     <h2 style="font-size: 18px; color: #1a3d5c;">Lanjutan dari Hari Sebelumnya</h2>
     <p style="color: #5d6d7e; margin-top: 6px;">Laporan dalam penanganan yang assignment-nya dibuat sebelum hari ini dan dapat diambil alih Guru Piket yang bertugas.</p>
     @if ($continued->isEmpty())
@@ -89,7 +89,7 @@
     @endif
 </div>
 
-<div class="card" style="margin-top: 20px;">
+<div class="sl-card">
     <h2 style="font-size: 18px; color: #1a3d5c;">Laporan yang saya tangani</h2>
     @if ($mine->isEmpty())
         <p style="color: #7f8c8d; margin-top: 10px;">Belum ada laporan yang Anda ambil.</p>
@@ -113,3 +113,4 @@
     @endif
 </div>
 @endsection
+

@@ -3,7 +3,7 @@
 @section('title', 'Detail Laporan Diteruskan')
 
 @section('content')
-<div class="card">
+<div class="sl-card">
     @if (session('success'))
         <p style="margin-bottom: 12px; color: #1e8449; font-weight: 600;">{{ session('success') }}</p>
     @endif
@@ -77,3 +77,4 @@
     </div>
 </div>
 @endsection
+

@@ -3,7 +3,7 @@
 @section('title', 'Tambah User')
 
 @section('content')
-<div class="welcome-card">
+<div class="sl-card">
     <h1>Tambah User</h1>
     <form method="POST" action="{{ route('admin.users.store') }}" style="margin-top: 24px;">
         @csrf
@@ -44,3 +44,4 @@
     </form>
 </div>
 @endsection
+

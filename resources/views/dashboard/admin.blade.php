@@ -3,11 +3,9 @@
 @section('title', 'Dashboard Admin')
 
 @section('content')
-<div class="welcome-card">
-    <h1>Selamat datang, {{ auth()->user()->name }}</h1>
-    <p>Panel Administrasi SI-LPiket</p>
-    <p>Gunakan menu <strong>Data Sistem</strong> di sidebar untuk menyiapkan data aplikasi.</p>
-
+<div class="sl-card">
+    <h2>Selamat datang, {{ auth()->user()->name }}</h2>
+    <p style="color:var(--muted);margin-top:4px;">Panel Administrasi SI-LPiket. Gunakan menu <strong>Data Sistem</strong> di sidebar untuk menyiapkan data aplikasi.</p>
     <div class="stats-grid">
         <div class="stat-card info">
             <h3>Total Users</h3>
@@ -40,3 +38,4 @@
     </div>
 </div>
 @endsection
+

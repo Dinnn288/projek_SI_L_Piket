@@ -13,7 +13,7 @@ class SchoolClassController extends Controller
 {
     public function index(): View
     {
-        $classes = SchoolClass::with('major')->withCount('students')->orderBy('name')->get();
+        $classes = SchoolClass::with('major')->withCount('students')->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.classes.index', compact('classes'));
     }
