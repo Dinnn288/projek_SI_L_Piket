@@ -5,23 +5,24 @@
 @section('content')
 <div class="sl-card">
     <h1>Edit Jurusan</h1>
-    <form method="POST" action="{{ route('admin.majors.update', $major) }}" style="margin-top: 24px;">
+    <form method="POST" action="{{ route('admin.majors.update', $major) }}" class="mt-3">
         @csrf
         @method('PUT')
-        <div style="margin-bottom: 16px;">
-            <label for="name">Nama Jurusan</label><br>
-            <input id="name" type="text" name="name" value="{{ old('name', $major->name) }}" required maxlength="200" style="width: 100%; margin-top: 6px; padding: 8px;">
+        <div class="mt-2">
+            <label for="name">Nama Jurusan</label>
+            <input id="name" type="text" name="name" value="{{ old('name', $major->name) }}" required maxlength="200">
         </div>
-        <div style="margin-bottom: 16px;">
-            <label for="status">Status</label><br>
-            <select id="status" name="status" required style="width: 100%; margin-top: 6px; padding: 8px;">
+        <div class="mt-2">
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
                 <option value="aktif" @selected(old('status', $major->status) === 'aktif')>Aktif</option>
                 <option value="nonaktif" @selected(old('status', $major->status) === 'nonaktif')>Nonaktif</option>
             </select>
         </div>
-        <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Simpan</button>
-        <a href="{{ route('admin.majors.index') }}" style="margin-left: 12px;">Batal</a>
+        <button type="submit" class="btn">Simpan</button>
+        <a href="{{ route('admin.majors.index') }}" class="btn btn-secondary">Batal</a>
     </form>
 </div>
 @endsection
+
 

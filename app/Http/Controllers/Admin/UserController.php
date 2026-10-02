@@ -18,9 +18,21 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $users = UserBaru::orderBy('name')->paginate(10)->withQueryString();
+        $query = UserBaru::query();
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('role', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.users.index', compact('users'));
     }

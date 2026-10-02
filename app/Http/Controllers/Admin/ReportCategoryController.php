@@ -10,9 +10,20 @@ use Illuminate\View\View;
 
 class ReportCategoryController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $categories = ReportCategory::withCount('reports')->orderBy('name')->paginate(10)->withQueryString();
+        $query = ReportCategory::withCount('reports');
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('priority', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
+
+        $categories = $query->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.report_categories.index', compact('categories'));
     }

@@ -13,9 +13,22 @@ use Illuminate\View\View;
 
 class TeacherController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $teachers = Teacher::with(['userBaru'])->orderBy('nip')->paginate(10)->withQueryString();
+        $query = Teacher::with(['userBaru']);
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('nip', 'like', "%{$search}%")
+                    ->orWhereHas('userBaru', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $teachers = $query->orderBy('nip')->paginate(10)->withQueryString();
 
         return view('admin.teachers.index', compact('teachers'));
     }

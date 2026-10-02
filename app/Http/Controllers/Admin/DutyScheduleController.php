@@ -31,9 +31,25 @@ class DutyScheduleController extends Controller
         return Teacher::with('userBaru')->orderBy('nip')->get();
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $schedules = DutySchedule::with(['teacher.userBaru'])->orderBy('day')->orderBy('teacher_id')->get();
+        $query = DutySchedule::with(['teacher.userBaru']);
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('day', 'like', "%{$search}%")
+                    ->orWhereHas('teacher', function ($tq) use ($search) {
+                        $tq->where('nip', 'like', "%{$search}%")
+                            ->orWhereHas('userBaru', function ($uq) use ($search) {
+                                $uq->where('name', 'like', "%{$search}%")
+                                    ->orWhere('username', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        $schedules = $query->orderBy('day')->orderBy('teacher_id')->get();
         $grouped = $schedules->groupBy('day');
 
         return view('admin.duty_schedules.index', [

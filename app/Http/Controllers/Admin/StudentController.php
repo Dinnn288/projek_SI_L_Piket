@@ -14,9 +14,25 @@ use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $students = Student::with(['userBaru', 'schoolClass.major'])->orderBy('nis')->paginate(10)->withQueryString();
+        $query = Student::with(['userBaru', 'schoolClass.major']);
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('nis', 'like', "%{$search}%")
+                    ->orWhereHas('userBaru', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%")
+                            ->orWhere('username', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('schoolClass', function ($cq) use ($search) {
+                        $cq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $students = $query->orderBy('nis')->paginate(10)->withQueryString();
 
         return view('admin.students.index', compact('students'));
     }

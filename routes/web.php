@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SchoolClassController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\ReportController as GuruReportController;
@@ -61,6 +62,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifikasi/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 });
 
 // Existing role-protected routes for testing
@@ -78,6 +82,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/{report}/attachment/{attachment}', [SiswaReportController::class, 'attachment'])->name('reports.attachment');
         Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
         Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifikasi/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
     });
 
     Route::middleware('role:guru')->prefix('guru')->name('guru.')->group(function () {
@@ -91,6 +97,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/laporan/{report}/forward', [GuruReportController::class, 'forward'])->name('reports.forward');
         Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
         Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifikasi/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
     });
 
     Route::middleware('role:kepala_sekolah')->prefix('kepala-sekolah')->name('kepala-sekolah.')->group(function () {
@@ -102,5 +110,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/laporan/{report}/return', [KepalaSekolahReportController::class, 'returnToTeacher'])->name('reports.return');
         Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
         Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifikasi/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
     });
 });

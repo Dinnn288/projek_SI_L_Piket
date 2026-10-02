@@ -5,21 +5,22 @@
 @section('content')
 <div class="sl-card">
     <h1>Pengaturan Jam Operasional</h1>
-    <p style="color: #5d6d7e; margin-top: 6px;">Jam ini digunakan sebagai batas operasional Guru Piket untuk mengambil dan menangani laporan. Waktu aktual sistem tetap Asia/Jakarta.</p>
-    <form method="POST" action="{{ route('admin.settings.operational-hours.update') }}" style="margin-top: 24px;">
+    <p class="muted text-sm mt-1">Jam ini digunakan sebagai batas operasional Guru Piket untuk mengambil dan menangani laporan. Waktu aktual sistem tetap Asia/Jakarta.</p>
+    <form method="POST" action="{{ route('admin.settings.operational-hours.update') }}" class="mt-3">
         @csrf
         @method('PUT')
-        <div style="margin-bottom: 16px;">
-            <label for="operational_start_time">Jam Mulai Operasional</label><br>
-            <input id="operational_start_time" type="time" name="operational_start_time" value="{{ old('operational_start_time', $start) }}" required style="margin-top: 6px; padding: 8px;">
+        <div class="mt-2">
+            <label for="operational_start_time">Jam Mulai Operasional</label>
+            <input id="operational_start_time" type="time" name="operational_start_time" value="{{ old('operational_start_time', $start) }}" required>
         </div>
-        <div style="margin-bottom: 16px;">
-            <label for="operational_end_time">Jam Selesai Operasional</label><br>
-            <input id="operational_end_time" type="time" name="operational_end_time" value="{{ old('operational_end_time', $end) }}" required style="margin-top: 6px; padding: 8px;">
+        <div class="mt-2">
+            <label for="operational_end_time">Jam Selesai Operasional</label>
+            <input id="operational_end_time" type="time" name="operational_end_time" value="{{ old('operational_end_time', $end) }}" required>
         </div>
-        <button type="submit" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Simpan Pengaturan</button>
-        <a href="{{ route('admin.dashboard') }}" style="margin-left: 12px;">Batal</a>
+        <button type="submit" class="btn">Simpan Pengaturan</button>
+        <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">Batal</a>
     </form>
 </div>
 @endsection
+
 

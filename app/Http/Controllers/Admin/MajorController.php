@@ -12,7 +12,15 @@ class MajorController extends Controller
 {
     public function index(): View
     {
-        $majors = Major::withCount('classes')->orderBy('name')->paginate(10)->withQueryString();
+        $majors = Major::withCount('classes')
+            ->when(request()->filled('search'), function ($query) {
+                $search = trim((string) request()->input('search'));
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('status', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.majors.index', compact('majors'));
     }

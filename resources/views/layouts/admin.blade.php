@@ -1,4 +1,4 @@
-<x-app-shell :title="$title ?? 'Admin SI-LPiket'" breadcrumb="Admin" :unread="0" :dashboardRoute="route('admin.dashboard')">
+<x-app-shell :title="$title ?? 'Admin SI-LPiket'" breadcrumb="Admin" :unread="$headerUnreadCount ?? $unreadCount ?? 0" :dashboardRoute="route('admin.dashboard')" :notificationsRoute="route('admin.notifications.index')">
     <x-slot name="sidebar">
         <div class="sl-user">
             <div class="name">{{ auth()->user()?->name ?? 'Guest' }}</div>
@@ -16,6 +16,7 @@
             <a href="{{ route('admin.teachers.index') }}" class="sl-link {{ request()->routeIs('admin.teachers*') ? 'active' : '' }}">Guru</a>
             <a href="{{ route('admin.duty-schedules.index') }}" class="sl-link {{ request()->routeIs('admin.duty-schedules*') ? 'active' : '' }}">Jadwal Guru Piket</a>
             <a href="{{ route('admin.report-categories.index') }}" class="sl-link {{ request()->routeIs('admin.report-categories*') ? 'active' : '' }}">Kategori &amp; Prioritas</a>
+            <a href="{{ route('admin.notifications.index') }}" class="sl-link {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}">Notifikasi</a>
             <form method="POST" action="{{ route('logout') }}" class="sl-logout">
                 @csrf
                 <button type="submit" class="btn btn-secondary" style="width:100%;">Logout</button>
@@ -24,4 +25,5 @@
     </x-slot>
     @yield('content')
 </x-app-shell>
+
 

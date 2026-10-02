@@ -11,9 +11,22 @@ use Illuminate\View\View;
 
 class SchoolClassController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $classes = SchoolClass::with('major')->withCount('students')->orderBy('name')->paginate(10)->withQueryString();
+        $query = SchoolClass::with('major')->withCount('students');
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhereHas('major', function ($mq) use ($search) {
+                        $mq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $classes = $query->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.classes.index', compact('classes'));
     }

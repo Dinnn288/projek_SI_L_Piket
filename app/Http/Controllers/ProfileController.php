@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
+use App\Models\UserBaru;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -41,8 +45,35 @@ class ProfileController extends Controller
                 ->withInput();
         }
 
-        $user->password = Hash::make($data['password']);
-        $user->save();
+        DB::transaction(function () use ($user, $data) {
+            $user->password = Hash::make($data['password']);
+            $user->save();
+
+            // Notifikasi audit ke seluruh Admin aktif — hanya setelah
+            // password benar-benar tersimpan (dalam transaction yang sama).
+            $changedAt = Carbon::now(config('app.timezone'));
+            $when = $changedAt->translatedFormat('j F Y').' pukul '.$changedAt->format('H:i');
+            $adminIds = UserBaru::where('role', 'admin')
+                ->where('status', 'aktif')
+                ->pluck('id');
+
+            foreach ($adminIds as $adminId) {
+                $exists = Notification::where('user_id', $adminId)
+                    ->where('title', 'Perubahan Password')
+                    ->where('message', 'like', 'Akun '.$user->name.' mengubah password pada '.$when.'.%')
+                    ->exists();
+
+                if (! $exists) {
+                    Notification::create([
+                        'user_id' => $adminId,
+                        'report_id' => null,
+                        'title' => 'Perubahan Password',
+                        'message' => 'Akun '.$user->name.' mengubah password pada '.$when.'.',
+                        'is_read' => false,
+                    ]);
+                }
+            }
+        });
 
         return back()->with('success', 'Password berhasil diubah.');
     }
