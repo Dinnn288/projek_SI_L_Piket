@@ -4,22 +4,16 @@
 
 @section('content')
 <div class="sl-card">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-        <h1 style="font-size: 22px; color: #1a3d5c;">{{ $report->title }}</h1>
-        @if ($report->status === 'menunggu')
-            <span class="badge badge-menunggu">Menunggu</span>
-        @elseif ($report->status === 'selesai')
-            <span class="badge badge-selesai">Selesai</span>
-        @else
-            <span class="badge badge-proses">{{ $report->status }}</span>
-        @endif
+    <div class="row-between" style="align-items:flex-start;">
+        <h1 style="font-size: 22px;">{{ $report->title }}</h1>
+        <x-status-badge :value="$report->status" />
     </div>
-    <p style="color: #5d6d7e; margin-top: 6px;">Kategori: {{ $report->category?->name }} | Prioritas: {{ $report->priority }}</p>
-    <p style="color: #5d6d7e; margin-top: 6px;">Pelapor: {{ $report->student?->userBaru?->name }} | Kelas: {{ $report->schoolClass?->name }} | Lokasi: {{ $report->location }}</p>
-    <p style="color: #5d6d7e; margin-top: 6px;">Dibuat: {{ $report->created_at?->format('d M Y H:i') }} | Penanggung jawab: {{ $report->assignedTeacher?->userBaru?->name ?? 'Belum diambil' }}</p>
-    <div style="margin-top: 16px;">
+    <p class="muted text-sm mt-1">Kategori: {{ $report->category?->name }} | Prioritas: <x-priority-badge :value="$report->priority" /></p>
+    <p class="muted text-sm mt-1">Pelapor: {{ $report->student?->userBaru?->name }} | Kelas: {{ $report->schoolClass?->name }} | Lokasi: {{ $report->location }}</p>
+    <p class="muted text-sm mt-1">Dibuat: {{ $report->created_at?->format('d M Y H:i') }} | Penanggung jawab: {{ $report->assignedTeacher?->userBaru?->name ?? 'Belum diambil' }}</p>
+    <div class="mt-2">
         <h2 style="font-size: 16px;">Deskripsi</h2>
-        <p style="margin-top: 6px; white-space: pre-line;">{{ $report->description }}</p>
+        <p class="mt-1" style="white-space: pre-line;">{{ $report->description }}</p>
     </div>
     <div style="margin-top: 16px;">
         <h2 style="font-size: 16px;">Foto bukti ({{ $report->attachments->count() }})</h2>
@@ -32,14 +26,14 @@
             @endforeach
         </div>
     </div>
-    <div style="margin-top: 16px;">
+    <div class="mt-2">
         <h2 style="font-size: 16px;">Riwayat penanganan</h2>
         @if ($report->histories->isEmpty())
-            <p style="color: #7f8c8d; margin-top: 6px;">Belum ada riwayat.</p>
+            <p class="empty">Belum ada riwayat.</p>
         @else
-            <ul style="margin-top: 8px; padding-left: 20px;">
+            <ul class="timeline">
                 @foreach ($report->histories->sortBy('created_at') as $history)
-                    <li>{{ $history->created_at?->format('d M Y H:i') }} - {{ $history->userBaru?->name }}: {{ $history->action }} ({{ $history->from_status ?? '-' }} → {{ $history->to_status ?? '-' }}){{ $history->note ? ' - '.$history->note : '' }}</li>
+                    <li><strong>{{ $history->created_at?->format('d M Y H:i') }}</strong> — {{ $history->userBaru?->name }}: {{ $history->action }} ({{ $history->from_status ?? '-' }} → {{ $history->to_status ?? '-' }}){{ $history->note ? ' — '.$history->note : '' }}</li>
                 @endforeach
             </ul>
         @endif
@@ -53,13 +47,13 @@
         @elseif ($isWaiting && ! $canClaim)
             <p style="color: #b7950b; font-weight: 600;">{{ $claimMessage }}</p>
         @elseif (($isContinuable ?? false) && ($canTakeover ?? false))
-            <p style="color: #5d6d7e; margin-top: 6px;">Lanjutan dari hari sebelumnya. Guru sebelumnya: {{ $report->assignedTeacher?->userBaru?->name }} (diambil {{ $report->assigned_at?->format('d M Y H:i') }}).</p>
+            <p class="muted text-sm mt-1">Lanjutan dari hari sebelumnya. Guru sebelumnya: {{ $report->assignedTeacher?->userBaru?->name }} (diambil {{ $report->assigned_at?->format('d M Y H:i') }}).</p>
             <form method="POST" action="{{ route('guru.reports.takeover', $report) }}" onsubmit="return confirm('Ambil alih laporan ini?');" style="margin-top: 12px;">
                 @csrf
                 <button type="submit" class="btn">Ambil Alih Laporan</button>
             </form>
         @elseif ($isContinuable ?? false)
-            <p style="color: #5d6d7e; margin-top: 6px;">Lanjutan dari hari sebelumnya. Guru sebelumnya: {{ $report->assignedTeacher?->userBaru?->name }} (diambil {{ $report->assigned_at?->format('d M Y H:i') }}).</p>
+            <p class="muted text-sm mt-1">Lanjutan dari hari sebelumnya. Guru sebelumnya: {{ $report->assignedTeacher?->userBaru?->name }} (diambil {{ $report->assigned_at?->format('d M Y H:i') }}).</p>
             <p style="color: #b7950b; font-weight: 600; margin-top: 10px;">{{ $takeoverMessage ?? '' }}</p>
         @endif
         @if ($isMine && $report->status === 'dalam_penanganan')
@@ -92,4 +86,5 @@
     </div>
 </div>
 @endsection
+
 

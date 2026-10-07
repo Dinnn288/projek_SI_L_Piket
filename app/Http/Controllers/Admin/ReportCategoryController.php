@@ -23,6 +23,14 @@ class ReportCategoryController extends Controller
             });
         }
 
+        if (in_array($request->input('priority'), ['rendah', 'sedang', 'tinggi'], true)) {
+            $query->where('priority', $request->input('priority'));
+        }
+
+        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
+            $query->where('status', $request->input('status'));
+        }
+
         $categories = $query->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.report_categories.index', compact('categories'));

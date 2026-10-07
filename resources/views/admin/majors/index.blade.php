@@ -9,7 +9,9 @@
         <a href="{{ route('admin.majors.create') }}" class="btn">Tambah Jurusan</a>
     </div>
 
-    <x-admin-search placeholder="Cari nama jurusan, status..." />
+    <x-admin-search placeholder="Cari nama jurusan, status...">
+        <x-admin-filter name="status" label="Status" placeholder="Status: Semua" :options="['aktif' => 'Aktif', 'nonaktif' => 'Nonaktif']" />
+    </x-admin-search>
 
     <x-admin-table>
         <thead>
@@ -30,13 +32,7 @@
                     <td><x-state-badge :value="$major->status" :map="['aktif' => ['badge-aktif', 'Aktif'], 'nonaktif' => ['badge-nonaktif', 'Nonaktif']]" /></td>
                     <td>{{ $major->classes_count }}</td>
                     <td>{{ $major->created_at?->format('d M Y') }}</td>
-                    <td class="sl-actions"><a href="{{ route('admin.majors.edit', $major) }}">Edit</a>
-                        <form method="POST" action="{{ route('admin.majors.destroy', $major) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jurusan ini?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">Hapus</button>
-                        </form>
-                    </td>
+                    <td class="sl-actions"><x-admin-action-menu :editUrl="route('admin.majors.edit', $major)" :deleteAction="route('admin.majors.destroy', $major)" deleteConfirm="Apakah Anda yakin ingin menghapus jurusan ini?" /></td>
                 </tr>
             @empty
                 <tr>

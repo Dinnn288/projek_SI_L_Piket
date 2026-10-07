@@ -20,7 +20,6 @@
                 <h1>SI-LPiket</h1>
                 <p>Sistem Informasi Laporan Piket</p>
             </div>
-            <h2 style="font-size:18px;margin:18px 0 4px;">Masuk</h2>
             <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Gunakan username dan password akun Anda.</p>
             @if ($errors->any())
                 <div class="flash flash-error">

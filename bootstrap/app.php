@@ -12,6 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Percayai forwarded headers dari reverse proxy lokal (mis. cloudflared
+        // Cloudflare Tunnel yang berjalan di localhost) agar Laravel mengenali
+        // skema HTTPS publik via X-Forwarded-Proto. Hanya IP loopback yang
+        // dipercaya — bukan '*' — sehingga header dari sumber luar tidak bisa
+        // memalsukan skema. Tanpa ini asset() menghasilkan URL http:// yang
+        // diblokir browser sebagai Mixed Content pada halaman https://.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
         ]);

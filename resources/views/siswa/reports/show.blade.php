@@ -14,9 +14,9 @@
             <span class="badge badge-proses">{{ $report->status }}</span>
         @endif
     </div>
-    <p style="color: #5d6d7e; margin-top: 6px;">Kategori: {{ $report->category?->name }} | Prioritas: {{ $report->priority }} (dari kategori)</p>
-    <p style="color: #5d6d7e; margin-top: 6px;">Kelas: {{ $report->schoolClass?->name }} | Lokasi: {{ $report->location }}</p>
-    <p style="color: #5d6d7e; margin-top: 6px;">Dibuat: {{ $report->created_at?->format('d M Y H:i') }}</p>
+    <p class="muted text-sm mt-1">Kategori: {{ $report->category?->name }} | Prioritas: {{ $report->priority }} (dari kategori)</p>
+    <p class="muted text-sm mt-1">Kelas: {{ $report->schoolClass?->name }} | Lokasi: {{ $report->location }}</p>
+    <p class="muted text-sm mt-1">Dibuat: {{ $report->created_at?->format('d M Y H:i') }}</p>
     @if (session('success'))
         <p style="margin-top: 10px; color: #1e8449; font-weight: 600;">{{ session('success') }}</p>
     @endif
@@ -46,4 +46,5 @@
     </div>
 </div>
 @endsection
+
 

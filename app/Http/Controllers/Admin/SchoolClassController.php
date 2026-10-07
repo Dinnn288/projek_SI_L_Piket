@@ -26,9 +26,18 @@ class SchoolClassController extends Controller
             });
         }
 
-        $classes = $query->orderBy('name')->paginate(10)->withQueryString();
+        if ($request->filled('major_id') && Major::whereKey($request->input('major_id'))->exists()) {
+            $query->where('major_id', $request->input('major_id'));
+        }
 
-        return view('admin.classes.index', compact('classes'));
+        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $classes = $query->orderBy('name')->paginate(10)->withQueryString();
+        $majors = Major::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.classes.index', compact('classes', 'majors'));
     }
 
     public function create(): View

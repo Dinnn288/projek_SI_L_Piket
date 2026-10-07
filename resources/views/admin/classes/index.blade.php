@@ -9,7 +9,10 @@
         <a href="{{ route('admin.classes.create') }}" class="btn">Tambah Kelas</a>
     </div>
 
-    <x-admin-search placeholder="Cari nama kelas, jurusan, status..." />
+    <x-admin-search placeholder="Cari nama kelas, jurusan, status...">
+        <x-admin-filter name="major_id" label="Jurusan" placeholder="Jurusan: Semua" :options="$majors->pluck('name', 'id')->all()" />
+        <x-admin-filter name="status" label="Status" placeholder="Status: Semua" :options="['aktif' => 'Aktif', 'nonaktif' => 'Nonaktif']" />
+    </x-admin-search>
 
     <x-admin-table>
         <thead>
@@ -32,13 +35,7 @@
                     <td><x-state-badge :value="$schoolClass->status" :map="['aktif' => ['badge-aktif', 'Aktif'], 'nonaktif' => ['badge-nonaktif', 'Nonaktif']]" /></td>
                     <td>{{ $schoolClass->students_count }}</td>
                     <td>{{ $schoolClass->created_at?->format('d M Y') }}</td>
-                    <td class="sl-actions"><a href="{{ route('admin.classes.edit', $schoolClass) }}">Edit</a>
-                        <form method="POST" action="{{ route('admin.classes.destroy', $schoolClass) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">Hapus</button>
-                        </form>
-                    </td>
+                    <td class="sl-actions"><x-admin-action-menu :editUrl="route('admin.classes.edit', $schoolClass)" :deleteAction="route('admin.classes.destroy', $schoolClass)" deleteConfirm="Apakah Anda yakin ingin menghapus kelas ini?" /></td>
                 </tr>
             @empty
                 <tr>

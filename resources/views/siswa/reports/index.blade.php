@@ -3,12 +3,12 @@
 @section('title', 'Laporan Saya')
 
 @section('content')
-<div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <h1 style="font-size: 22px; color: #1f3d2b;">Laporan Saya</h1>
+<div class="sl-card">
+    <div class="sl-card-head">
+        <h1>Laporan Saya</h1>
         <a href="{{ route('siswa.reports.create') }}" class="btn">Buat Laporan</a>
     </div>
-    <p style="color: #5d6d7e; margin-top: 6px;">Kelas: {{ $student->schoolClass?->name ?? '-' }} | NIS: {{ $student->nis }}</p>
+    <p class="muted text-sm mt-1">Kelas: {{ $student->schoolClass?->name ?? '-' }} | NIS: {{ $student->nis }}</p>
     @if ($reports->isEmpty())
         <p style="color: #7f8c8d; margin-top: 16px;">Belum ada laporan. <a href="{{ route('siswa.reports.create') }}">Buat Laporan</a></p>
     @else
@@ -43,3 +43,4 @@
     @endif
 </div>
 @endsection
+

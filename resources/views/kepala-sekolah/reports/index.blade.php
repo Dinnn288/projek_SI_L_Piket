@@ -3,9 +3,9 @@
 @section('title', 'Laporan Diteruskan')
 
 @section('content')
-<div class="card">
-    <h1 style="font-size: 22px; color: #4a235a;">Laporan Diteruskan</h1>
-    <p style="color: #5d6d7e; margin-top: 6px;">Hanya laporan berstatus diteruskan. Bersifat read-only.</p>
+<div class="sl-card">
+    <h1>Laporan Diteruskan</h1>
+    <p class="muted text-sm mt-1">Hanya laporan berstatus diteruskan. Bersifat read-only.</p>
     @if ($reports->isEmpty())
         <p style="color: #7f8c8d; margin-top: 14px;">Belum ada laporan yang diteruskan.</p>
     @else
@@ -33,3 +33,4 @@
     @endif
 </div>
 @endsection
+

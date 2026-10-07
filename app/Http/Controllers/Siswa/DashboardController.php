@@ -36,7 +36,7 @@ class DashboardController extends Controller
         $notifications = Notification::where('user_id', $request->user()->id)
             ->with('report')
             ->latest()
-            ->take(5)
+            ->limit(3)
             ->get();
         $unreadCount = Notification::where('user_id', $request->user()->id)
             ->where('is_read', false)

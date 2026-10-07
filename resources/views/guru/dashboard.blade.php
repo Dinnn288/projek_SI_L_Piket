@@ -5,17 +5,17 @@
 @section('content')
 <div class="sl-card">
     <h1 style="font-size: 24px; color: #1a3d5c;">Halo, {{ auth()->user()->name }}</h1>
-    <p style="color: #5d6d7e; margin-top: 6px;">Hari ini: {{ $day ?? 'di luar jadwal (minggu)' }} | Jam Operasional: {{ str_replace(':', '.', $operationalStart ?? '07:00') }} - {{ str_replace(':', '.', $operationalEnd ?? '16:00') }} WIB | Waktu server: {{ ($serverNow ?? now())->format('d M Y H:i:s') }} WIB | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }}</p>
+    <p class="muted text-sm mt-1">Hari ini: {{ $day ?? 'di luar jadwal (minggu)' }} | Jam Operasional: {{ str_replace(':', '.', $operationalStart ?? '07:00') }} - {{ str_replace(':', '.', $operationalEnd ?? '16:00') }} WIB | Waktu server: {{ ($serverNow ?? now())->format('d M Y H:i:s') }} WIB | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }}</p>
     @if (! $onDutyDay)
         <p style="margin-top: 10px; color: #b7950b;">Anda tidak terjadwal piket hari ini, sehingga laporan menunggu tidak ditampilkan dan tombol Ambil Laporan dinonaktifkan.</p>
     @elseif (! $withinHours)
         <p style="margin-top: 10px; color: #b7950b;">Saat ini di luar jam operasional {{ str_replace(':', '.', $operationalStart ?? '07:00') }}-{{ str_replace(':', '.', $operationalEnd ?? '16:00') }} WIB. Laporan menunggu ditampilkan, tetapi pengambilan ditolak server.</p>
     @endif
-    <div class="sl-grid">
-        <div class="stat"><h3>Laporan menunggu (hari piket saya)</h3><div class="value">{{ $waitingCount }}</div></div>
-        <div class="stat"><h3>Lanjutan dari hari sebelumnya</h3><div class="value">{{ $continuedCount }}</div></div>
-        <div class="stat"><h3>Sedang saya tangani</h3><div class="value">{{ $mineActive }}</div></div>
-        <div class="stat"><h3>Total saya tangani</h3><div class="value">{{ $mineTotal }}</div></div>
+    <div class="sl-grid stat-compact">
+        <div class="stat"><h3>Menunggu</h3><div class="value">{{ $waitingCount }}</div></div>
+        <div class="stat"><h3>Lanjutan</h3><div class="value">{{ $continuedCount }}</div></div>
+        <div class="stat"><h3>Ditangani</h3><div class="value">{{ $mineActive }}</div></div>
+        <div class="stat success"><h3>Total</h3><div class="value">{{ $mineTotal }}</div></div>
     </div>
 </div>
 
@@ -65,7 +65,7 @@
 
 <div class="sl-card">
     <h2 style="font-size: 18px; color: #1a3d5c;">Lanjutan dari Hari Sebelumnya</h2>
-    <p style="color: #5d6d7e; margin-top: 6px;">Laporan dalam penanganan yang assignment-nya dibuat sebelum hari ini dan dapat diambil alih Guru Piket yang bertugas.</p>
+    <p class="muted text-sm mt-1">Laporan dalam penanganan yang assignment-nya dibuat sebelum hari ini dan dapat diambil alih Guru Piket yang bertugas.</p>
     @if ($continued->isEmpty())
         <p style="color: #7f8c8d; margin-top: 10px;">Tidak ada laporan lanjutan untuk jadwal piket Anda.</p>
     @else
@@ -113,4 +113,5 @@
     @endif
 </div>
 @endsection
+
 

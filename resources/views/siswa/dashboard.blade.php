@@ -11,7 +11,7 @@
         <a href="{{ route('siswa.reports.create') }}" class="btn">Buat Laporan</a>
         <a href="{{ route('siswa.reports.index') }}" class="btn btn-secondary">Laporan Saya</a>
     </div>
-    <div class="sl-grid">
+    <div class="sl-grid stat-compact">
         <div class="stat"><h3>Total laporan saya</h3><div class="value">{{ $total }}</div></div>
         <div class="stat"><h3>Menunggu</h3><div class="value">{{ $menunggu }}</div></div>
         <div class="stat"><h3>Diproses</h3><div class="value">{{ $diproses }}</div></div>
@@ -50,15 +50,16 @@
     @else
         <div class="table-wrap" style="margin-top:12px;border:none;">
         <table>
-            <thead><tr><th>Judul</th><th>Kategori</th><th>Status</th><th>Foto</th><th>Dibuat</th></tr></thead>
+            <thead><tr><th>Judul</th><th>Kategori</th><th>Status</th><th>Foto</th><th>Dibuat</th><th>Aksi</th></tr></thead>
             <tbody>
                 @foreach ($latest as $report)
                     <tr>
-                        <td><a href="{{ route('siswa.reports.show', $report) }}">{{ $report->title }}</a></td>
+                        <td>{{ $report->title }}</td>
                         <td>{{ $report->category?->name }}</td>
                         <td><x-status-badge :value="$report->status" /></td>
                         <td>{{ $report->attachments->count() }}</td>
                         <td>{{ $report->created_at?->format('d M Y H:i') }}</td>
+                        <td class="sl-actions"><a href="{{ route('siswa.reports.show', $report) }}">Detail</a></td>
                     </tr>
                 @endforeach
             </tbody>

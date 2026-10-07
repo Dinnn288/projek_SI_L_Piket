@@ -12,7 +12,10 @@
         <a href="{{ route('admin.users.create') }}" class="btn">+ Tambah User</a>
     </div>
 
-    <x-admin-search placeholder="Cari nama, username, role, status..." />
+    <x-admin-search placeholder="Cari nama, username, role, status...">
+        <x-admin-filter name="role" label="Role" placeholder="Role: Semua" :options="['admin' => 'Admin', 'siswa' => 'Siswa', 'guru' => 'Guru', 'kepala_sekolah' => 'Kepala Sekolah']" />
+        <x-admin-filter name="status" label="Status" placeholder="Status: Semua" :options="['aktif' => 'Aktif', 'nonaktif' => 'Nonaktif']" />
+    </x-admin-search>
 
     <x-admin-table>
         <thead>
@@ -39,13 +42,7 @@
                         <x-state-badge :value="$user->status" :map="['aktif' => ['badge-aktif', 'Aktif'], 'nonaktif' => ['badge-nonaktif', 'Nonaktif']]" />
                     </td>
                     <td>{{ $user->created_at?->format('d M Y') }}</td>
-                    <td class="sl-actions"><a href="{{ route('admin.users.edit', $user) }}">Edit</a>
-                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">Hapus</button>
-                        </form>
-                    </td>
+                    <td class="sl-actions"><x-admin-action-menu :editUrl="route('admin.users.edit', $user)" :deleteAction="route('admin.users.destroy', $user)" deleteConfirm="Apakah Anda yakin ingin menghapus user ini?" /></td>
                 </tr>
             @empty
                 <tr>

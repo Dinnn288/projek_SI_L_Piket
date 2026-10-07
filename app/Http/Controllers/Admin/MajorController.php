@@ -10,17 +10,23 @@ use Illuminate\View\View;
 
 class MajorController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $majors = Major::withCount('classes')
-            ->when(request()->filled('search'), function ($query) {
-                $search = trim((string) request()->input('search'));
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('status', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('name')->paginate(10)->withQueryString();
+        $query = Major::withCount('classes');
+
+        if ($request->filled('search')) {
+            $search = trim((string) $request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
+
+        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $majors = $query->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.majors.index', compact('majors'));
     }

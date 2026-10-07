@@ -31,10 +31,6 @@ class ReportController extends Controller
 
     public function show(Report $report): View
     {
-        if (! in_array($report->status, ['diteruskan', 'selesai'], true)) {
-            abort(404);
-        }
-
         $report->load([
             'student.userBaru', 'schoolClass', 'category',
             'assignedTeacher.userBaru', 'attachments',
@@ -53,10 +49,6 @@ class ReportController extends Controller
 
     public function attachment(Report $report, ReportAttachment $attachment): BinaryFileResponse
     {
-        if (! in_array($report->status, ['diteruskan', 'selesai'], true)) {
-            abort(404);
-        }
-
         if ((int) $attachment->report_id !== (int) $report->id) {
             abort(404);
         }

@@ -6,7 +6,7 @@
 <div class="sl-card">
     <h2>Selamat datang, {{ auth()->user()->name }}</h2>
     <p style="color:var(--muted);margin-top:4px;">Panel Administrasi SI-LPiket. Gunakan menu <strong>Data Sistem</strong> di sidebar untuk menyiapkan data aplikasi.</p>
-    <div class="sl-grid">
+    <div class="sl-grid stat-compact">
         <div class="stat info">
             <h3>Total Users</h3>
             <div class="value">{{ $stats['users_baru'] ?? 0 }}</div>

@@ -28,6 +28,12 @@ class TeacherController extends Controller
             });
         }
 
+        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
+            $query->whereHas('userBaru', function ($uq) use ($request) {
+                $uq->where('status', $request->input('status'));
+            });
+        }
+
         $teachers = $query->orderBy('nip')->paginate(10)->withQueryString();
 
         return view('admin.teachers.index', compact('teachers'));

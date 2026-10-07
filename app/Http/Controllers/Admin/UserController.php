@@ -32,6 +32,14 @@ class UserController extends Controller
             });
         }
 
+        if (in_array($request->input('role'), ['admin', 'siswa', 'guru', 'kepala_sekolah'], true)) {
+            $query->where('role', $request->input('role'));
+        }
+
+        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
+            $query->where('status', $request->input('status'));
+        }
+
         $users = $query->orderBy('name')->paginate(10)->withQueryString();
 
         return view('admin.users.index', compact('users'));

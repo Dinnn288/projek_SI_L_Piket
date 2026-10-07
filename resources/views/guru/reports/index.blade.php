@@ -3,9 +3,9 @@
 @section('title', 'Laporan Piket')
 
 @section('content')
-<div class="card">
-    <h1 style="font-size: 22px; color: #1a3d5c;">Laporan Menunggu</h1>
-    <p style="color: #5d6d7e; margin-top: 6px;">Hari ini: {{ $day ?? '-' }} | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }} | Jam piket: 07.00-16.00</p>
+<div class="sl-card">
+    <h1>Laporan Menunggu</h1>
+    <p class="muted text-sm mt-1">Hari ini: {{ $day ?? '-' }} | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }} | Jam piket: 07.00-16.00</p>
     @if (! $onDutyDay)
         <p style="color: #b7950b; margin-top: 10px;">Daftar disembunyikan karena Anda tidak terjadwal piket hari ini.</p>
     @elseif ($waiting->isEmpty())
@@ -35,7 +35,7 @@
 
 <div class="card" style="margin-top: 20px;">
     <h1 style="font-size: 22px; color: #1a3d5c;">Lanjutan dari Hari Sebelumnya</h1>
-    <p style="color: #5d6d7e; margin-top: 6px;">Laporan dalam penanganan yang dapat diambil alih Guru Piket hari ini. Riwayat guru sebelumnya tetap tersimpan.</p>
+    <p class="muted text-sm mt-1">Laporan dalam penanganan yang dapat diambil alih Guru Piket hari ini. Riwayat guru sebelumnya tetap tersimpan.</p>
     @if (! $onDutyDay)
         <p style="color: #b7950b; margin-top: 10px;">Daftar disembunyikan karena Anda tidak terjadwal piket hari ini.</p>
     @elseif ($continued->isEmpty())
@@ -90,3 +90,4 @@
     @endif
 </div>
 @endsection
+

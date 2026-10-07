@@ -32,9 +32,20 @@ class StudentController extends Controller
             });
         }
 
-        $students = $query->orderBy('nis')->paginate(10)->withQueryString();
+        if ($request->filled('class_id') && SchoolClass::whereKey($request->input('class_id'))->exists()) {
+            $query->where('class_id', $request->input('class_id'));
+        }
 
-        return view('admin.students.index', compact('students'));
+        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
+            $query->whereHas('userBaru', function ($uq) use ($request) {
+                $uq->where('status', $request->input('status'));
+            });
+        }
+
+        $students = $query->orderBy('nis')->paginate(10)->withQueryString();
+        $classes = SchoolClass::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.students.index', compact('students', 'classes'));
     }
 
     public function create(): View

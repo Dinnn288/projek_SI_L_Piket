@@ -49,6 +49,10 @@ class DutyScheduleController extends Controller
             });
         }
 
+        if (in_array($request->input('day'), self::DAYS, true)) {
+            $query->where('day', $request->input('day'));
+        }
+
         $schedules = $query->orderBy('day')->orderBy('teacher_id')->get();
         $grouped = $schedules->groupBy('day');
 

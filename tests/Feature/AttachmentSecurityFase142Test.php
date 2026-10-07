@@ -181,9 +181,9 @@ class AttachmentSecurityFase142Test extends TestCase
         $att = $rep->attachments()->firstOrFail();
         $kepsek = UserBaru::where('username', 'f142_kepsek')->firstOrFail();
         $guruA = UserBaru::where('username', 'f142_guru_a')->firstOrFail();
-        // Belum diteruskan -> 404
-        $this->actingAs($kepsek)->get('/kepala-sekolah/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(404);
-        // Claim + forward -> kepsek boleh
+        // Kepsek boleh melihat attachment seluruh laporan (monitoring)
+        $this->actingAs($kepsek)->get('/kepala-sekolah/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(200);
+        // Claim + forward -> kepsek tetap boleh
         $this->actingAs($guruA)->post('/guru/laporan/'.$rep->id.'/claim')->assertSessionHas('success');
         $this->actingAs($guruA)->post('/guru/laporan/'.$rep->id.'/forward', ['note' => 'Butuh kepsek.'])->assertSessionHas('success');
         $this->actingAs($kepsek)->get('/kepala-sekolah/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(200);

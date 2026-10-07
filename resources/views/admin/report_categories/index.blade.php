@@ -9,7 +9,10 @@
         <a href="{{ route('admin.report-categories.create') }}" class="btn">Tambah Kategori</a>
     </div>
 
-    <x-admin-search placeholder="Cari nama kategori, prioritas, status..." />
+    <x-admin-search placeholder="Cari nama kategori, prioritas, status...">
+        <x-admin-filter name="priority" label="Prioritas" placeholder="Prioritas: Semua" :options="['rendah' => 'Rendah', 'sedang' => 'Sedang', 'tinggi' => 'Tinggi']" />
+        <x-admin-filter name="status" label="Status" placeholder="Status: Semua" :options="['aktif' => 'Aktif', 'nonaktif' => 'Nonaktif']" />
+    </x-admin-search>
 
     <x-admin-table>
         <thead>
@@ -30,13 +33,7 @@
                     <td><x-priority-badge :value="$category->priority" /></td>
                     <td><x-state-badge :value="$category->status" :map="['aktif' => ['badge-aktif', 'Aktif'], 'nonaktif' => ['badge-nonaktif', 'Nonaktif']]" /></td>
                     <td>{{ $category->reports_count }}</td>
-                    <td class="sl-actions"><a href="{{ route('admin.report-categories.edit', $category) }}">Edit</a>
-                        <form method="POST" action="{{ route('admin.report-categories.destroy', $category) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori ini?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">Hapus</button>
-                        </form>
-                    </td>
+                    <td class="sl-actions"><x-admin-action-menu :editUrl="route('admin.report-categories.edit', $category)" :deleteAction="route('admin.report-categories.destroy', $category)" deleteConfirm="Apakah Anda yakin ingin menghapus kategori ini?" /></td>
                 </tr>
             @empty
                 <tr>

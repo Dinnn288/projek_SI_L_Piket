@@ -12,7 +12,9 @@
         <a href="{{ route('admin.duty-schedules.create') }}" class="btn">Tambah Jadwal</a>
     </div>
 
-    <x-admin-search placeholder="Cari nama guru, NIP, hari..." />
+    <x-admin-search placeholder="Cari nama guru, NIP, hari...">
+        <x-admin-filter name="day" label="Hari" placeholder="Hari: Semua" :options="['senin' => 'Senin', 'selasa' => 'Selasa', 'rabu' => 'Rabu', 'kamis' => 'Kamis', 'jumat' => 'Jumat', 'sabtu' => 'Sabtu']" />
+    </x-admin-search>
 
     @php
         $labels = ['senin' => 'Senin', 'selasa' => 'Selasa', 'rabu' => 'Rabu', 'kamis' => 'Kamis', 'jumat' => 'Jumat', 'sabtu' => 'Sabtu'];
@@ -37,13 +39,7 @@
                             <td>{{ $schedule->id }}</td>
                             <td>{{ $schedule->teacher?->userBaru?->name }}</td>
                             <td>{{ $schedule->teacher?->nip }}</td>
-                            <td class="sl-actions"><a href="{{ route('admin.duty-schedules.edit', $schedule) }}">Edit</a>
-                                <form method="POST" action="{{ route('admin.duty-schedules.destroy', $schedule) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jadwal ini?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;">Hapus</button>
-                                </form>
-                            </td>
+                            <td class="sl-actions"><x-admin-action-menu :editUrl="route('admin.duty-schedules.edit', $schedule)" :deleteAction="route('admin.duty-schedules.destroy', $schedule)" deleteConfirm="Apakah Anda yakin ingin menghapus jadwal ini?" /></td>
                         </tr>
                     @endforeach
                 </tbody>

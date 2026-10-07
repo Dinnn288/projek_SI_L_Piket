@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserBaru;
+use App\Support\SingleSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +40,10 @@ class AuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+
+        // ONE ACCOUNT = ONE ACTIVE SESSION: login ini menjadi sesi aktif
+        // terbaru; sesi lama di device lain otomatis tidak valid.
+        SingleSession::remember($user->id, $request->session()->getId());
 
         return redirect()->intended($this->redirectForRole($user->role));
     }

@@ -17,23 +17,19 @@
             @endforeach
         </ul>
     @endif
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
-        <h1 style="font-size: 22px; color: #4a235a;">{{ $report->title }}</h1>
-        @if ($report->status === 'diteruskan')
-            <span class="badge badge-forward">Diteruskan</span>
-        @else
-            <span class="badge badge-done">Selesai</span>
-        @endif
+    <div class="row-between" style="align-items:flex-start;">
+        <h1 style="font-size: 22px;">{{ $report->title }}</h1>
+        <x-status-badge :value="$report->status" />
     </div>
     <h2 style="font-size: 16px; margin-top: 14px;">Informasi Siswa</h2>
-    <p style="color: #5d6d7e; margin-top: 6px;">Nama: {{ $report->student?->userBaru?->name }} | Kelas: {{ $report->schoolClass?->name }} | Lokasi: {{ $report->location }}</p>
+    <p class="muted text-sm mt-1">Nama: {{ $report->student?->userBaru?->name }} | Kelas: {{ $report->schoolClass?->name }} | Lokasi: {{ $report->location }}</p>
     <h2 style="font-size: 16px; margin-top: 14px;">Informasi Laporan</h2>
-    <p style="color: #5d6d7e; margin-top: 6px;">Kategori: {{ $report->category?->name }} | Prioritas: {{ $report->priority }} | Status: {{ $report->status }} | Dibuat: {{ $report->created_at?->format('d M Y H:i') }}</p>
+    <p class="muted text-sm mt-1">Kategori: {{ $report->category?->name }} | Prioritas: <x-priority-badge :value="$report->priority" /> | Status: <x-status-badge :value="$report->status" /> | Dibuat: {{ $report->created_at?->format('d M Y H:i') }}</p>
     <h2 style="font-size: 16px; margin-top: 14px;">Deskripsi Siswa</h2>
-    <p style="margin-top: 6px; white-space: pre-line;">{{ $report->description }}</p>
+    <p class="mt-1" style="white-space: pre-line;">{{ $report->description }}</p>
     <h2 style="font-size: 16px; margin-top: 14px;">Alasan Guru Meneruskan</h2>
-    <p style="margin-top: 6px; white-space: pre-line;">{{ $forwardHistory?->note ?? '-' }}</p>
-    <p style="color: #5d6d7e; margin-top: 6px;">Guru penerus: {{ $forwardHistory?->userBaru?->name ?? $report->assignedTeacher?->userBaru?->name }} | Waktu forward: {{ $forwardHistory?->created_at?->format('d M Y H:i') }}</p>
+    <p class="mt-1" style="white-space: pre-line;">{{ $forwardHistory?->note ?? '-' }}</p>
+    <p class="muted text-sm mt-1">Guru penerus: {{ $forwardHistory?->userBaru?->name ?? $report->assignedTeacher?->userBaru?->name }} | Waktu forward: {{ $forwardHistory?->created_at?->format('d M Y H:i') }}</p>
     <h2 style="font-size: 16px; margin-top: 14px;">Bukti foto ({{ $report->attachments->count() }})</h2>
     <div class="photo-grid">
         @foreach ($report->attachments as $attachment)
@@ -44,12 +40,12 @@
         @endforeach
     </div>
     <h2 style="font-size: 16px; margin-top: 16px;">Riwayat Laporan</h2>
-    <ul style="margin-top: 8px; padding-left: 20px;">
+    <ul class="timeline">
         @foreach ($report->histories->sortBy('created_at') as $history)
-            <li>{{ $history->created_at?->format('d M Y H:i') }} - {{ $history->userBaru?->name }}: {{ $history->action }} ({{ $history->from_status ?? '-' }} → {{ $history->to_status ?? '-' }}){{ $history->note ? ' - '.$history->note : '' }}</li>
+            <li><strong>{{ $history->created_at?->format('d M Y H:i') }}</strong> — {{ $history->userBaru?->name }}: {{ $history->action }} ({{ $history->from_status ?? '-' }} → {{ $history->to_status ?? '-' }}){{ $history->note ? ' — '.$history->note : '' }}</li>
         @endforeach
     </ul>
-    @if ($canAct)
+    @if (($canAct ?? ($report->status === 'diteruskan')))
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 18px;">
             <form method="POST" action="{{ route('kepala-sekolah.reports.complete', $report) }}" onsubmit="return confirm('Selesaikan laporan ini?');">
                 @csrf

@@ -103,6 +103,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:kepala_sekolah')->prefix('kepala-sekolah')->name('kepala-sekolah.')->group(function () {
         Route::get('/', [KepalaSekolahDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/monitoring-dalam-penanganan', [KepalaSekolahDashboardController::class, 'monitoringJson'])->name('monitoring.json');
         Route::get('/laporan', [KepalaSekolahReportController::class, 'index'])->name('reports.index');
         Route::get('/laporan/{report}', [KepalaSekolahReportController::class, 'show'])->name('reports.show');
         Route::get('/laporan/{report}/attachment/{attachment}', [KepalaSekolahReportController::class, 'attachment'])->name('reports.attachment');
