@@ -25,9 +25,14 @@ class UserProfileSyncTest extends TestCase
     {
         parent::setUp();
         $this->reconnect();
+        $class = \App\Models\SchoolClass::orderBy('id')->first();
+        if (! $class) {
+            $major = \App\Models\Major::firstOrCreate(['name' => 'TEST_MAJOR_FSY'], ['status' => 'aktif']);
+            $class = \App\Models\SchoolClass::create(['major_id' => $major->id, 'name' => 'TEST_KELAS_FSY', 'status' => 'aktif']);
+        }
         $admin = UserBaru::where('username', 'fsy_admin')->first()
             ?: UserBaru::create(['name' => 'Admin FSY', 'username' => 'fsy_admin', 'password' => Hash::make('password123'), 'role' => 'admin', 'status' => 'aktif']);
-        $this->ids = ['admin' => $admin->id];
+        $this->ids = ['admin' => $admin->id, 'class' => $class->id];
     }
 
     protected function tearDown(): void
@@ -57,11 +62,20 @@ class UserProfileSyncTest extends TestCase
 
     private function payload(string $username, string $role): array
     {
-        return [
+        $base = [
             'name' => 'Nama '.$username, 'username' => $username,
             'password' => 'password123', 'password_confirmation' => 'password123',
             'role' => $role, 'status' => 'aktif',
         ];
+        if ($role === 'siswa') {
+            $base['nis'] = 'FSY-'.$username;
+            $base['class_id'] = $this->ids['class'];
+        }
+        if ($role === 'guru') {
+            $base['nip'] = 'FSY-'.$username;
+        }
+
+        return $base;
     }
 
     public function test_create_guru_appears_in_teachers(): void
@@ -117,6 +131,7 @@ class UserProfileSyncTest extends TestCase
         $this->assertNotNull(Teacher::where('user_id', $user->id)->first());
         $this->actingAs($this->admin())->put('/admin/users/'.$user->id, [
             'name' => 'X', 'username' => 'fsy_guru2', 'role' => 'siswa', 'status' => 'aktif',
+            'nis' => 'FSY-fsy_guru2-nis', 'class_id' => $this->ids['class'],
         ])->assertRedirect();
         $user->refresh();
         $this->assertEquals('siswa', $user->role);

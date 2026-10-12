@@ -120,6 +120,7 @@ class AttachmentSecurityFase142Test extends TestCase
             'title' => $title, 'category_id' => $this->ids['cat'],
             'location' => 'Kelas - lokasi', 'description' => 'Deskripsi '.$title,
             'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
 
         return Report::where('title', $title)->firstOrFail();
@@ -168,9 +169,9 @@ class AttachmentSecurityFase142Test extends TestCase
         $this->actingAs($guruA)->get('/guru/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(200);
         // Guru B juga piket hari ini -> boleh (aturan waiting multi-guru)
         $this->actingAs($guruB)->get('/guru/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(200);
-        // Setelah Guru A claim, Guru B ditolak
+        // Setelah Guru A claim, Guru B ditolak -> 404 (A2, samarkan eksistensi)
         $this->actingAs($guruA)->post('/guru/laporan/'.$rep->id.'/claim')->assertSessionHas('success');
-        $this->actingAs($guruB)->get('/guru/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(403);
+        $this->actingAs($guruB)->get('/guru/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(404);
         // Pemilik (Guru A) tetap boleh
         $this->actingAs($guruA)->get('/guru/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(200);
     }
@@ -181,8 +182,9 @@ class AttachmentSecurityFase142Test extends TestCase
         $att = $rep->attachments()->firstOrFail();
         $kepsek = UserBaru::where('username', 'f142_kepsek')->firstOrFail();
         $guruA = UserBaru::where('username', 'f142_guru_a')->firstOrFail();
-        // Kepsek boleh melihat attachment seluruh laporan (monitoring)
-        $this->actingAs($kepsek)->get('/kepala-sekolah/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(200);
+        // A1: laporan menunggu tanpa riwayat forwarded -> kepsek 404.
+        $this->actingAs($kepsek)->get('/kepala-sekolah/laporan/'.$rep->id.'/attachment/'.$att->id)->assertStatus(404);
+        $this->actingAs($kepsek)->get('/kepala-sekolah/laporan/'.$rep->id)->assertStatus(404);
         // Claim + forward -> kepsek tetap boleh
         $this->actingAs($guruA)->post('/guru/laporan/'.$rep->id.'/claim')->assertSessionHas('success');
         $this->actingAs($guruA)->post('/guru/laporan/'.$rep->id.'/forward', ['note' => 'Butuh kepsek.'])->assertSessionHas('success');
@@ -200,6 +202,7 @@ class AttachmentSecurityFase142Test extends TestCase
         $this->actingAs($siswaA)->post('/siswa/laporan', [
             'title' => 'F142-V', 'category_id' => $this->ids['cat'], 'location' => 'L',
             'description' => 'D',
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertSessionHasErrors('photos');
         $rep = $this->createReport('F142-VOK');
         $att = $rep->attachments()->firstOrFail();

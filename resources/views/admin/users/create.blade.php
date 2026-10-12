@@ -17,21 +17,74 @@
         </div>
         <div class="mt-2">
             <label for="password">Password (min. 8 karakter)</label>
-            <input id="password" type="password" name="password" required>
+            <div class="sl-pw-field" data-sl-pw-field>
+                <input id="password" type="password" name="password" required>
+                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
+            </div>
         </div>
         <div class="mt-2">
             <label for="password_confirmation">Konfirmasi Password</label>
-            <input id="password_confirmation" type="password" name="password_confirmation" required>
+            <div class="sl-pw-field" data-sl-pw-field>
+                <input id="password_confirmation" type="password" name="password_confirmation" required>
+                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
+            </div>
         </div>
         <div class="mt-2">
             <label for="role">Role</label>
-            <select id="role" name="role" required>
+            <select id="role" name="role" required data-sl-user-role>
                 <option value="admin" @selected(old('role') === 'admin')>Admin</option>
                 <option value="siswa" @selected(old('role', 'siswa') === 'siswa')>Siswa</option>
                 <option value="guru" @selected(old('role') === 'guru')>Guru</option>
                 <option value="kepala_sekolah" @selected(old('role') === 'kepala_sekolah')>Kepala Sekolah</option>
             </select>
         </div>
+        <div class="mt-2" data-sl-user-nis-wrap>
+            <label for="nis">NIS</label>
+            <input id="nis" type="text" name="nis" value="{{ old('nis') }}" maxlength="50">
+        </div>
+        <div class="mt-2" data-sl-user-nip-wrap>
+            <label for="nip">NIP</label>
+            <input id="nip" type="text" name="nip" value="{{ old('nip') }}" maxlength="50">
+        </div>
+        <div class="mt-2" data-sl-user-class-wrap>
+            <label for="class_id">Kelas (khusus siswa)</label>
+            <select id="class_id" name="class_id">
+                <option value="">Pilih Kelas</option>
+                @foreach ($classes as $schoolClass)
+                    <option value="{{ $schoolClass->id }}" @selected((string) old('class_id') === (string) $schoolClass->id)>{{ $schoolClass->name }} — {{ $schoolClass->major?->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <script>
+        (function () {
+            var role = document.querySelector('[data-sl-user-role]');
+            var nisWrap = document.querySelector('[data-sl-user-nis-wrap]');
+            var nipWrap = document.querySelector('[data-sl-user-nip-wrap]');
+            var classWrap = document.querySelector('[data-sl-user-class-wrap]');
+            var nis = document.getElementById('nis');
+            var nip = document.getElementById('nip');
+            var classId = document.getElementById('class_id');
+            if (!role || !nisWrap || !nipWrap || !classWrap) return;
+            function sync() {
+                var v = role.value;
+                var isSiswa = v === 'siswa';
+                var isGuru = v === 'guru';
+                nisWrap.style.display = isSiswa ? '' : 'none';
+                nipWrap.style.display = isGuru ? '' : 'none';
+                classWrap.style.display = isSiswa ? '' : 'none';
+                // Nilai field yang disembunyikan dikosongkan agar NIS tidak
+                // tertukar ke NIP (dan sebaliknya) saat role diganti.
+                if (!isSiswa && nis) nis.value = '';
+                if (!isGuru && nip) nip.value = '';
+                if (!isSiswa && classId) classId.value = '';
+                if (nis) nis.required = isSiswa;
+                if (nip) nip.required = isGuru;
+                if (classId) classId.required = isSiswa;
+            }
+            role.addEventListener('change', sync);
+            sync();
+        })();
+        </script>
         <div class="mt-2">
             <label for="status">Status</label>
             <select id="status" name="status" required>

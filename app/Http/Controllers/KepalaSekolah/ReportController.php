@@ -29,8 +29,32 @@ class ReportController extends Controller
         return view('kepala-sekolah.reports.index', compact('reports'));
     }
 
+    /**
+     * Otorisasi objek kepsek (A1): izinkan bila status saat ini
+     * 'diteruskan' (antrean), 'dalam_penanganan' (cakupan monitoring),
+     * atau laporan pernah 'forwarded' (riwayat diteruskan/selesai/
+     * dikembalikan). Selain itu 404 — konsisten dengan pola keamanan
+     * aplikasi (samarkan eksistensi resource tak berhak).
+     */
+    private function authorizeReport(Report $report): void
+    {
+        if ($report->status === 'diteruskan' || $report->status === 'dalam_penanganan') {
+            return;
+        }
+
+        $everForwarded = $report->histories()
+            ->where('action', 'forwarded')
+            ->exists();
+
+        if (! $everForwarded) {
+            abort(404);
+        }
+    }
+
     public function show(Report $report): View
     {
+        $this->authorizeReport($report);
+
         $report->load([
             'student.userBaru', 'schoolClass', 'category',
             'assignedTeacher.userBaru', 'attachments',
@@ -52,6 +76,8 @@ class ReportController extends Controller
         if ((int) $attachment->report_id !== (int) $report->id) {
             abort(404);
         }
+
+        $this->authorizeReport($report);
 
         $absolutePath = Storage::disk('local')->path($attachment->file_patch);
 

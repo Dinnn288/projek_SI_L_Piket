@@ -182,7 +182,8 @@ class GuruHandleStep2Test extends TestCase
             ->post('/guru/laporan/'.$rep->id.'/forward', ['note' => 'hack'])
             ->assertSessionHas('error');
         $this->assertEquals('dalam_penanganan', $rep->fresh()->status);
-        $this->actingAs($this->guru('f7s2_guru_b'))->get('/guru/laporan/'.$rep->id)->assertStatus(403);
+        // A2: tak-berhak -> 404 (samarkan eksistensi), bukan 403.
+        $this->actingAs($this->guru('f7s2_guru_b'))->get('/guru/laporan/'.$rep->id)->assertStatus(404);
     }
 
     public function test_status_protection(): void

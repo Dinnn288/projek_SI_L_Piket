@@ -15,7 +15,13 @@ class DashboardController extends Controller
 {
     private function currentTeacher(Request $request): Teacher
     {
-        return Teacher::resolveForUser($request->user());
+        // B2.1: profil guru yatim ditangani sebagai 403 terkendali (bukan
+        // 500): arahkan admin melengkapi NIP resmi via Admin → Guru.
+        try {
+            return Teacher::resolveForUser($request->user());
+        } catch (\App\Exceptions\MissingTeacherProfile $e) {
+            abort(403, $e->getMessage());
+        }
     }
 
     public function index(Request $request): View

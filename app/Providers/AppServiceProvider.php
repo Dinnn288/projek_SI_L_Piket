@@ -49,7 +49,9 @@ class AppServiceProvider extends ServiceProvider
 
                 if ($user && $user->role === 'guru') {
                     if (! array_key_exists('teacher', $data) || $data['teacher'] === null) {
-                        $view->with('teacher', Teacher::resolveForUser($user));
+                        // B2.1: jangan membuat profil di composer; profil
+                        // yatim dibiarkan null dan ditangani controller.
+                        $view->with('teacher', $user->teacher()->first());
                     }
 
                     if (! array_key_exists('day', $data) || $data['day'] === null) {

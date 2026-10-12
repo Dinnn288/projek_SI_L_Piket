@@ -20,11 +20,6 @@
     @if (session('success'))
         <p style="margin-top: 10px; color: #1e8449; font-weight: 600;">{{ session('success') }}</p>
     @endif
-    <div class="status-info">
-        <div class="status-card"><strong>Menunggu</strong>Laporan diterima sistem dan menunggu guru piket.</div>
-        <div class="status-card"><strong>Diproses</strong>Laporan sedang ditangani atau diteruskan.</div>
-        <div class="status-card"><strong>Selesai</strong>Penanganan laporan telah selesai.</div>
-    </div>
     <div style="margin-top: 16px;">
         <h2 style="font-size: 16px;">Deskripsi</h2>
         <p style="margin-top: 6px; white-space: pre-line;">{{ $report->description }}</p>

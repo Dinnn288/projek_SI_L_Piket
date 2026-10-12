@@ -38,21 +38,45 @@ class AuthController extends Controller
             ])->onlyInput('username');
         }
 
+        // FIRST LOGIN WINS: klaim atomik — tolak login baru selama masih
+        // ada sesi aktif untuk akun ini. Marker TIDAK di-overwrite agar
+        // Device A tetap login; Device B tetap di halaman login dengan
+        // pesan yang jelas. Klaim dilakukan SETELAH regenerate agar marker
+        // menyimpan session ID final. Bila klaim gagal, Auth::login tidak
+        // pernah dipanggil sehingga tidak ada sesi setengah jadi.
         Auth::login($user);
         $request->session()->regenerate();
+        $sessionId = $request->session()->getId();
 
-        // ONE ACCOUNT = ONE ACTIVE SESSION: login ini menjadi sesi aktif
-        // terbaru; sesi lama di device lain otomatis tidak valid.
-        SingleSession::remember($user->id, $request->session()->getId());
+        $claim = SingleSession::tryClaim($user->id, $sessionId);
+
+        if (! $claim['claimed']) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'username' => 'Akun sedang digunakan pada perangkat lain. Silakan logout dari perangkat tersebut terlebih dahulu.',
+            ])->onlyInput('username');
+        }
 
         return redirect()->intended($this->redirectForRole($user->role));
     }
 
     public function logout(Request $request): RedirectResponse
     {
+        $userId = Auth::id();
+        $sessionId = $request->session()->getId();
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        // Logout normal membebaskan akun: hapus marker sesi aktif milik
+        // sesi ini sehingga device lain boleh login kembali.
+        if ($userId !== null) {
+            SingleSession::forget($userId, $sessionId);
+        }
 
         return redirect('/login');
     }

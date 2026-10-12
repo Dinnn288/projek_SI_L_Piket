@@ -158,6 +158,8 @@ class SiswaReportStep1Test extends TestCase
             'location' => 'TEST_KELAS_F6S1 - depan papan tulis',
             'description' => 'Lampu depan papan tulis mati sejak pagi.',
             'photos' => $photos,
+            // B1: idempotency key wajib — tiap payload baru dapat key unik.
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ];
     }
 

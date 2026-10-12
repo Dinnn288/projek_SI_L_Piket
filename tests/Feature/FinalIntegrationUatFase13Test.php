@@ -150,16 +150,19 @@ class FinalIntegrationUatFase13Test extends TestCase
         // Validasi foto: tanpa foto & 6 foto ditolak
         $this->actingAs($siswa)->post('/siswa/laporan', [
             'title' => 'X', 'category_id' => $cat->id, 'location' => 'L', 'description' => 'D',
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertSessionHasErrors('photos');
         $photos = [];
         for ($i = 0; $i < 6; $i++) $photos[] = $this->makePhoto("f$i.png");
         $this->actingAs($siswa)->post('/siswa/laporan', [
             'title' => 'X', 'category_id' => $cat->id, 'location' => 'L', 'description' => 'D', 'photos' => $photos,
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertSessionHasErrors('photos');
         // Berhasil 1 foto
         $this->actingAs($siswa)->post('/siswa/laporan', [
             'title' => 'F13 Report', 'category_id' => $cat->id, 'location' => 'Kelas - lokasi',
             'description' => 'Deskripsi F13', 'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $report = Report::where('title', 'F13 Report')->firstOrFail();
         $student = Student::where('nis', 'F13NIS001')->firstOrFail();
@@ -179,6 +182,7 @@ class FinalIntegrationUatFase13Test extends TestCase
         $this->actingAs($siswa)->post('/siswa/laporan', [
             'title' => 'X2', 'category_id' => $cat->id, 'location' => 'L', 'description' => 'D',
             'photos' => [$this->makePhoto('b.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertSessionHasErrors('category_id');
         $this->actingAs($admin)->put('/admin/report-categories/'.$cat->id, [
             'name' => 'F13_Kategori', 'status' => 'aktif', 'priority' => 'tinggi',
@@ -212,6 +216,7 @@ class FinalIntegrationUatFase13Test extends TestCase
         $this->actingAs($sUser)->post('/siswa/laporan', [
             'title' => 'F13 Guru Flow', 'category_id' => $cat->id, 'location' => 'L',
             'description' => 'D', 'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $report = Report::where('title', 'F13 Guru Flow')->firstOrFail();
         // Claim
@@ -254,6 +259,7 @@ class FinalIntegrationUatFase13Test extends TestCase
         $this->actingAs($sUser)->post('/siswa/laporan', [
             'title' => 'F13 Forward Flow', 'category_id' => $cat->id, 'location' => 'L',
             'description' => 'D', 'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $report = Report::where('title', 'F13 Forward Flow')->firstOrFail();
         $this->actingAs($gUser)->post('/guru/laporan/'.$report->id.'/claim')->assertSessionHas('success');

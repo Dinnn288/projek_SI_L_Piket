@@ -17,11 +17,6 @@
         <div class="stat"><h3>Diproses</h3><div class="value">{{ $diproses }}</div></div>
         <div class="stat success"><h3>Selesai</h3><div class="value">{{ $selesai }}</div></div>
     </div>
-    <div class="status-info">
-        <div class="status-card"><strong>Menunggu</strong>Laporan sedang menunggu penanganan guru piket.</div>
-        <div class="status-card"><strong>Diproses</strong>Laporan sedang dalam penanganan atau diteruskan.</div>
-        <div class="status-card"><strong>Selesai</strong>Laporan sudah selesai ditangani.</div>
-    </div>
 </div>
 
 <div class="sl-card">

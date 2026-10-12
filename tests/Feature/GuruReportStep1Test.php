@@ -182,7 +182,8 @@ class GuruReportStep1Test extends TestCase
     public function test_show_waiting_by_offduty_guru_rejected(): void
     {
         $rep = $this->createReport('R-offduty');
-        $this->actingAs($this->guru('f7s1_guru_c'))->get('/guru/laporan/'.$rep->id)->assertStatus(403);
+        // A2: tak-berhak -> 404 (samarkan eksistensi), bukan 403.
+        $this->actingAs($this->guru('f7s1_guru_c'))->get('/guru/laporan/'.$rep->id)->assertStatus(404);
     }
 
     public function test_claim_success_by_onduty_guru(): void

@@ -186,6 +186,7 @@ class AdminMasterDataFase12FTest extends TestCase
             'title' => 'F12F Report', 'category_id' => $cat->id,
             'location' => 'Kelas - lokasi', 'description' => 'Deskripsi F12F',
             'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $report = Report::where('title', 'F12F Report')->firstOrFail();
         $this->assertEquals($student->id, (int) $report->student_id);

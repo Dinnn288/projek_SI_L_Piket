@@ -2,7 +2,7 @@
     <x-slot name="sidebar">
         <div class="sl-user">
             <div class="name">{{ auth()->user()?->name ?? 'Guru' }}</div>
-            <div class="meta">NIP: {{ $teacher->nip ?? '-' }} | Hari ini: {{ $day ?? '-' }}</div>
+            <div class="meta">NIP: {{ $teacher?->nip ?? '-' }} | Hari ini: {{ $day ?? '-' }}</div>
         </div>
         <nav class="sl-nav">
             <div class="sl-nav-title">Menu</div>

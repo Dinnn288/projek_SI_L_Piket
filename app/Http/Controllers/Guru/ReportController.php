@@ -23,7 +23,13 @@ class ReportController extends Controller
 {
     private function currentTeacher(Request $request): Teacher
     {
-        return Teacher::resolveForUser($request->user());
+        // B2.1: profil guru yatim ditangani sebagai 403 terkendali (bukan
+        // 500): arahkan admin melengkapi NIP resmi via Admin → Guru.
+        try {
+            return Teacher::resolveForUser($request->user());
+        } catch (\App\Exceptions\MissingTeacherProfile $e) {
+            abort(403, $e->getMessage());
+        }
     }
 
     public function index(Request $request): View
@@ -82,7 +88,7 @@ class ReportController extends Controller
 
         if ($isWaiting) {
             if (! GuruDutyService::isOnDutyDay($teacher)) {
-                abort(403, 'Laporan ini hanya dapat dilihat Guru Piket yang bertugas hari ini.');
+                abort(404);
             }
             $claim = GuruDutyService::canClaim($teacher);
             $canClaim = $claim['ok'];
@@ -91,7 +97,7 @@ class ReportController extends Controller
             $takeoverMessage = '';
         } elseif ($isContinuable) {
             if (! GuruDutyService::isOnDutyDay($teacher)) {
-                abort(403, 'Laporan lanjutan ini hanya dapat dilihat Guru Piket yang bertugas hari ini.');
+                abort(404);
             }
             $takeover = GuruDutyService::canTakeover($teacher, $report);
             $canClaim = false;
@@ -104,7 +110,7 @@ class ReportController extends Controller
             $canTakeover = false;
             $takeoverMessage = '';
         } else {
-            abort(403, 'Anda tidak berhak mengakses laporan ini.');
+            abort(404);
         }
 
         return view('guru.reports.show', compact('teacher', 'day', 'report', 'isWaiting', 'isMine', 'isContinuable', 'canClaim', 'claimMessage', 'canTakeover', 'takeoverMessage'));
@@ -124,10 +130,10 @@ class ReportController extends Controller
 
         if ($isWaiting || $isContinuable) {
             if (! GuruDutyService::isOnDutyDay($teacher)) {
-                abort(403, 'Anda tidak berhak mengakses laporan ini.');
+                abort(404);
             }
         } elseif (! $isMine) {
-            abort(403, 'Anda tidak berhak mengakses laporan ini.');
+            abort(404);
         }
 
         $absolutePath = Storage::disk('local')->path($attachment->file_patch);

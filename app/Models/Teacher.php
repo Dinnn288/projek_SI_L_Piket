@@ -22,13 +22,19 @@ class Teacher extends Model
     }
 
     /**
-     * Pastikan akun role guru selalu memiliki record teachers.
+     * Kembalikan profil teachers milik akun guru.
      *
-     * Akun Guru yang dibuat via Admin → Users hanya memiliki record
-     * users_baru tanpa record teachers pendamping. Method ini melengkapi
-     * record tersebut secara idempoten (firstOrCreate agar tidak duplikat)
-     * sehingga halaman Guru Piket tidak 403. NIP diisi dari username yang
-     * unik per akun; Admin dapat memperbaikinya via Admin → Guru.
+     * - Profil sudah ada (termasuk NIP resmi dari form): kembalikan apa
+     *   adanya TANPA mengubah NIP.
+     * - Profil belum ada: JANGAN membuat NIP dari username (berisiko
+     *   bentrok dengan NIP guru lain dan menghasilkan NIP tidak resmi).
+     *   Sebagai gantinya lempar MissingTeacherProfile agar pemanggil
+     *   menanganinya secara terkendali (403 dengan pesan + arahkan ke
+     *   Admin → Guru), bukan HTTP 500.
+     * - Satu profil per akun dijamin UNIQUE DB teachers.user_id; fungsi
+     *   ini hanya membaca, tidak pernah menulis.
+     *
+     * @throws \App\Exceptions\MissingTeacherProfile
      */
     public static function resolveForUser(UserBaru $user): self
     {
@@ -38,10 +44,7 @@ class Teacher extends Model
             return $existing;
         }
 
-        return static::firstOrCreate(
-            ['user_id' => $user->id],
-            ['nip' => $user->username, 'phone' => null]
-        );
+        throw new \App\Exceptions\MissingTeacherProfile($user);
     }
 
     public function dutySchedules(): HasMany

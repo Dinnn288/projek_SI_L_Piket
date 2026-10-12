@@ -47,17 +47,28 @@ class UserController extends Controller
 
     public function create(): View
     {
-        return view('admin.users.create');
+        $classes = SchoolClass::with('major')->orderBy('name')->get();
+
+        return view('admin.users.create', compact('classes'));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        // Aturan identitas mengikuti form Siswa/Guru: siswa wajib NIS unik
+        // + kelas, guru wajib NIP unik. Validasi kondisional per role agar
+        // akun Users tidak melewati aturan pembuatan siswa/guru.
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users_baru,username'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:admin,siswa,guru,kepala_sekolah'],
             'status' => ['required', 'in:aktif,nonaktif'],
+            'nis' => ['required_if:role,siswa', 'nullable', 'string', 'max:50', 'unique:students,nis'],
+            'class_id' => ['required_if:role,siswa', 'nullable', 'exists:classes,id'],
+            'nip' => [
+                'required_if:role,guru', 'nullable', 'string', 'max:50',
+                Rule::unique('teachers', 'nip'),
+            ],
         ]);
 
         $user = null;
@@ -71,7 +82,7 @@ class UserController extends Controller
                 'status' => $data['status'],
             ]);
 
-            static::ensureProfileFor($user);
+            static::ensureProfileFor($user, $data);
         });
 
         return redirect()->route('admin.users.index')
@@ -81,18 +92,22 @@ class UserController extends Controller
     /**
      * Buat record profil pendamping sesuai role secara idempoten.
      *
-     * - guru: teachers (nip diisi dari username yang unik per akun).
-     * - siswa: students membutuhkan nis unik + class_id yang tidak tersedia
-     *   di form Users; gunakan nis = username bila belum dipakai dan
-     *   class pertama yang tersedia. Jika tidak ada kelas, lempar error
-     *   validasi agar Admin melengkapi via Data Siswa (tanpa data palsu).
+     * - guru: teachers memakai NIP dari form (wajib + unik, sama seperti
+     *   form Guru). Nilai username TIDAK dipakai sebagai NIP agar tidak
+     *   tertukar dan tidak melanggar unique bila username sama dengan NIP
+     *   akun lain.
+     * - siswa: students memakai NIS + class_id dari form (sama seperti
+     *   form Siswa). Jika tidak ada kelas, lempar error validasi agar
+     *   Admin melengkapi via Data Siswa (tanpa data palsu).
+     *
+     * @param  array<string, mixed>  $data  Data tervalidasi dari form.
      */
-    public static function ensureProfileFor(UserBaru $user): void
+    public static function ensureProfileFor(UserBaru $user, array $data = []): void
     {
         if ($user->role === 'guru') {
             Teacher::firstOrCreate(
                 ['user_id' => $user->id],
-                ['nip' => $user->username, 'phone' => null]
+                ['nip' => (string) ($data['nip'] ?? $user->username), 'phone' => null]
             );
 
             return;
@@ -103,7 +118,7 @@ class UserController extends Controller
                 return;
             }
 
-            $classId = SchoolClass::orderBy('id')->value('id');
+            $classId = $data['class_id'] ?? SchoolClass::orderBy('id')->value('id');
 
             if (! $classId) {
                 throw ValidationException::withMessages([
@@ -113,24 +128,43 @@ class UserController extends Controller
 
             Student::firstOrCreate(
                 ['user_id' => $user->id],
-                ['nis' => $user->username, 'class_id' => $classId, 'phone' => null]
+                ['nis' => (string) ($data['nis'] ?? $user->username), 'class_id' => $classId, 'phone' => null]
             );
         }
     }
 
     public function edit(UserBaru $user): View
     {
-        return view('admin.users.edit', compact('user'));
+        $user->load(['student', 'teacher']);
+        $classes = SchoolClass::with('major')->orderBy('name')->get();
+
+        return view('admin.users.edit', compact('user', 'classes'));
     }
 
     public function update(Request $request, UserBaru $user): RedirectResponse
     {
+        // Validasi identitas mengikuti form tambah: siswa wajib NIS unik
+        // (kecualikan profil sendiri) + kelas valid; guru wajib NIP unik
+        // (kecualikan profil sendiri). Unique memakai kolom id profil
+        // (students.id / teachers.id), bukan user_id.
+        $studentId = $user->student()->value('id');
+        $teacherId = $user->teacher()->value('id');
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users_baru,username,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:admin,siswa,guru,kepala_sekolah'],
             'status' => ['required', 'in:aktif,nonaktif'],
+            'nis' => [
+                'required_if:role,siswa', 'nullable', 'string', 'max:50',
+                $studentId ? Rule::unique('students', 'nis')->ignore($studentId) : 'unique:students,nis',
+            ],
+            'class_id' => ['required_if:role,siswa', 'nullable', 'exists:classes,id'],
+            'nip' => [
+                'required_if:role,guru', 'nullable', 'string', 'max:50',
+                $teacherId ? Rule::unique('teachers', 'nip')->ignore($teacherId) : Rule::unique('teachers', 'nip'),
+            ],
         ]);
 
         $oldRole = $user->role;
@@ -179,7 +213,41 @@ class UserController extends Controller
 
             $user->save();
 
-            static::ensureProfileFor($user->fresh());
+            $fresh = $user->fresh();
+
+            // Sinkronisasi profil saat role TETAP (update NIS/NIP/kelas)
+            // maupun saat role BERGANTI (profil baru dari data form, profil
+            // lama tak-berelasi sudah dihapus di atas). Tanpa fallback
+            // username/kelas-pertama: data wajib dari form yang tervalidasi.
+            if ($fresh->role === 'siswa') {
+                $student = $fresh->student()->first();
+
+                if ($student) {
+                    $student->nis = (string) $data['nis'];
+                    $student->class_id = $data['class_id'];
+                    $student->save();
+                } else {
+                    Student::create([
+                        'user_id' => $fresh->id,
+                        'nis' => (string) $data['nis'],
+                        'class_id' => $data['class_id'],
+                        'phone' => null,
+                    ]);
+                }
+            } elseif ($fresh->role === 'guru') {
+                $teacher = $fresh->teacher()->first();
+
+                if ($teacher) {
+                    $teacher->nip = (string) $data['nip'];
+                    $teacher->save();
+                } else {
+                    Teacher::create([
+                        'user_id' => $fresh->id,
+                        'nip' => (string) $data['nip'],
+                        'phone' => null,
+                    ]);
+                }
+            }
         });
 
         return redirect()->route('admin.users.index')

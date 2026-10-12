@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title }}</title>
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('css/si-lpiket.css') }}">
 </head>
 <body>
@@ -13,8 +14,14 @@
         <div class="sl-backdrop" id="slBackdrop" aria-hidden="true"></div>
         <aside class="sl-sidebar" id="slSidebar">
             <div class="sl-brand">
-                <h1>SI-LPiket</h1>
-                <small>Sistem Informasi Laporan Piket</small>
+                <div class="sl-brand-logo">
+                    <img src="{{ asset('images/Logo-si-lpiket.jpg') }}" alt="Logo SI-LPiket" width="44" height="44">
+                    <div class="sl-brand-text">
+                        <h1>SI-LPiket</h1>
+                        <small>Sistem Informasi Laporan Piket</small>
+                    </div>
+                </div>
+                <button type="button" class="sl-sidebar-close" data-sl-close aria-label="Tutup menu">&times;</button>
             </div>
             {{ $sidebar }}
         </aside>
@@ -76,6 +83,7 @@
         </div>
     </div>
     <div class="sl-toast-wrap" id="slToastWrap" aria-live="polite"></div>
+    <script src="{{ asset('js/sl-password.js') }}" defer></script>
     <script>
     (function () {
         var sidebar = document.getElementById('slSidebar');
@@ -94,15 +102,21 @@
                 setSidebar(!(sidebar && sidebar.classList.contains('open')));
             });
         });
+        document.querySelectorAll('[data-sl-close]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                setSidebar(false);
+            });
+        });
+        // Backdrop: klik area kosong di luar sidebar langsung menutup.
+        // Klik di dalam sidebar (termasuk menu) tidak menutup agar user
+        // dapat memilih menu; sidebar tertutup saat navigasi terjadi.
+        // Tidak ada stopPropagation di sidebar agar handler global
+        // (tutup action-menu / profile-dropdown) tetap berjalan.
         if (backdrop) {
             backdrop.addEventListener('click', function () { setSidebar(false); });
         }
-        // Tutup sidebar mobile setelah memilih menu agar konten langsung
-        // dapat digunakan kembali; backdrop ikut disembunyikan.
-        document.querySelectorAll('#slSidebar .sl-nav a').forEach(function (link) {
-            link.addEventListener('click', function () {
-                if (isMobileSidebar()) setSidebar(false);
-            });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && isMobileSidebar()) setSidebar(false);
         });
         window.addEventListener('resize', function () {
             if (!isMobileSidebar()) setSidebar(false);

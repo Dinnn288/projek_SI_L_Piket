@@ -16,11 +16,31 @@
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; font-size: 14px; line-height: 1.55; }
+/* Show/Hide password: wrapper mengikuti gaya input SI-LPiket (font, warna,
+   border, radius, tinggi tidak berubah). Ikon di kanan dalam area input
+   dengan padding kanan ekstra agar teks tidak tertutup. */
+.sl-pw-field { position: relative; display: block; margin-top: 6px; }
+.sl-pw-field > input[type=password], .sl-pw-field > input[type=text][data-sl-pw-input] { margin-top: 0; padding-right: 44px; }
+.sl-pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: none; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+.sl-pw-toggle:hover { color: var(--primary); background: #f1f5f9; }
+.sl-pw-toggle:focus-visible { outline: 2px solid rgba(37,99,235,.4); outline-offset: 1px; }
+.sl-pw-toggle svg { width: 20px; height: 20px; }
+@media (max-width: 768px) {
+    .sl-pw-toggle { width: 44px; height: 44px; right: 4px; }
+    .sl-pw-field > input[type=password], .sl-pw-field > input[type=text][data-sl-pw-input] { padding-right: 52px; min-height: 44px; }
+}
 .sl-layout { display: flex; min-height: 100vh; }
 .sl-sidebar { width: 264px; background: var(--navy); color: #dbe4f0; height: 100vh; position: fixed; left: 0; top: 0; overflow-y: auto; z-index: 100; display: flex; flex-direction: column; }
 .sl-brand { padding: 20px; border-bottom: 1px solid rgba(255,255,255,.12); }
 .sl-brand h1 { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: .2px; }
 .sl-brand small { font-size: 12px; color: #9db2cc; }
+/* Logo SI-LPiket: baris logo + nama, proporsional, tanpa mengubah warna,
+   susunan menu, maupun tinggi sidebar secara berlebihan. */
+.sl-brand-logo { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.sl-brand-logo img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; background: #fff; flex-shrink: 0; }
+.sl-brand-text { min-width: 0; }
+.login-logo { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: 20px; margin: 0 auto 12px; background: #fff; box-shadow: var(--shadow); }
+.login-brand { text-align: center; margin-bottom: 4px; }
 .sl-user { padding: 14px 20px; background: rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.12); }
 .sl-user .name { font-weight: 600; font-size: 14px; color: #fff; }
 .sl-user .meta { font-size: 12px; color: #9db2cc; text-transform: capitalize; }
@@ -31,11 +51,12 @@ body { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Robo
 .sl-link.active { background: rgba(37,99,235,.22); color: #fff; border-left-color: var(--primary); }
 .sl-logout { margin: 12px; }
 .sl-main { flex: 1; margin-left: 264px; min-height: 100vh; min-width: 0; max-width: calc(100vw - 264px); overflow-x: clip; }
-.sl-topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50; }
-.sl-breadcrumb { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
-.sl-title { font-size: 20px; font-weight: 700; color: var(--ink); }
-.sl-subtitle { font-size: 13px; color: var(--muted); }
-.sl-topuser { display: flex; align-items: center; gap: 10px; }
+.sl-topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50; max-width: 100%; min-width: 0; }
+.sl-topbar > * { min-width: 0; }
+.sl-breadcrumb { font-size: 12px; color: var(--muted); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.sl-title { font-size: 20px; font-weight: 700; color: var(--ink); overflow-wrap: break-word; }
+.sl-subtitle { font-size: 13px; color: var(--muted); overflow-wrap: break-word; }
+.sl-topuser { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .sl-bell { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 50%; background: #fff; text-decoration: none; font-size: 17px; }
 .sl-bell-count { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 .sl-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
@@ -103,24 +124,123 @@ input[type=text], input[type=password], input[type=file], textarea, select { wid
 input:focus, textarea:focus, select:focus { outline: 2px solid rgba(37,99,235,.25); border-color: var(--primary); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-actions { margin-top: 20px; display: flex; gap: 10px; align-items: center; }
-.status-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
-.status-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 13px; color: var(--muted); background: #fbfdff; }
-.status-card strong { display: block; margin-bottom: 4px; color: var(--ink); font-size: 14px; }
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 10px; }
 .photo-grid img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
 .photo-grid .caption { font-size: 11px; color: var(--muted); margin-top: 4px; word-break: break-all; }
+/* Upload foto laporan siswa: Ambil Foto (kamera) + Pilih dari Galeri.
+   Hanya area foto; layout/sidebar/topbar/tabel tidak disentuh. */
+.sl-photo-upload { margin-top: 2px; max-width: 100%; min-width: 0; box-sizing: border-box; }
+[data-sl-photo-upload] { max-width: 100%; min-width: 0; }
+[data-sl-photo-upload] form { max-width: 100%; min-width: 0; }
+.sl-photo-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0 2px; max-width: 100%; min-width: 0; box-sizing: border-box; }
+.sl-photo-actions .btn { flex: 1 1 170px; min-width: 0; max-width: 100%; box-sizing: border-box; min-height: 44px; }
+.sl-photo-actions .btn:disabled { opacity: .55; cursor: not-allowed; }
+.sl-photo-or { color: var(--muted); font-size: 13px; }
+/* Form Kirim/Batal: jangan biarkan inline margin + tombol inline memaksa baris lebih lebar dari parent. */
+.sl-form-actions { display: flex; flex-wrap: wrap; gap: 10px; max-width: 100%; min-width: 0; margin-top: 4px; }
+.sl-form-actions .btn { min-width: 0; max-width: 100%; box-sizing: border-box; margin-left: 0 !important; }
+/* === Halaman Buat Laporan siswa (terisolasi via .sl-report-create) ===
+   Root cause bug HP+desktop: spacing form tidak konsisten (margin-top form
+   18px + margin-bottom field 14px menumpuk), tidak ada batas lebar baca di
+   desktop, dan field mengandalkan aturan global tanpa scope halaman.
+   Semua aturan di bawah hanya berlaku di halaman ini. */
+.sl-report-create { width: 100%; max-width: 720px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+.sl-report-create > h1, .sl-report-create > p { max-width: 100%; min-width: 0; overflow-wrap: break-word; }
+.sl-report-create .sl-report-form { margin-top: 18px; max-width: 100%; min-width: 0; box-sizing: border-box; }
+.sl-report-create .sl-report-field { margin-bottom: 14px; max-width: 100%; min-width: 0; box-sizing: border-box; }
+.sl-report-create .sl-report-field:last-of-type { margin-bottom: 0; }
+.sl-report-create label { display: block; overflow-wrap: break-word; }
+.sl-report-create input[type=text], .sl-report-create select, .sl-report-create textarea { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+.sl-report-create textarea { min-height: 120px; resize: vertical; }
+.sl-report-create .sl-photo-upload, .sl-report-create .sl-photo-actions, .sl-report-create .sl-camera, .sl-report-create .photo-grid, .sl-report-create .sl-form-actions { max-width: 100%; min-width: 0; box-sizing: border-box; }
+.sl-report-create .sl-photo-actions .btn { min-width: 0; max-width: 100%; }
+.sl-report-create .sl-camera { width: 100%; overflow: hidden; }
+.sl-report-create .sl-camera video { width: 100%; max-width: 100%; height: auto; box-sizing: border-box; }
+.sl-report-create .photo-grid { width: 100%; }
+.sl-report-create .photo-grid > * { min-width: 0; max-width: 100%; }
+.sl-report-create .photo-grid img { display: block; max-width: 100%; }
+.sl-report-create .photo-grid .caption { overflow-wrap: anywhere; word-break: break-word; }
+.sl-report-create .field-error { overflow-wrap: break-word; }
+/* Root cause overflow terukur (headless Chrome, semua viewport):
+   dua input file tersembunyi (#photos-gallery [data-sl-photos-gallery]
+   dan #photos [data-sl-photos]) kalah specificity — global
+   input[type=file] (0-1-1) mengalahkan .sl-photo-hidden (0-1-0), sehingga
+   width:100% + padding 10px 12px + margin-top:6px + border + min-height:44px
+   (mobile) tetap berlaku. Keduanya position:absolute tanpa left/right,
+   sehingga menempati static-position x≈34 dengan lebar penuh viewport
+   → docSW = viewport + 34px (360→394, 390→425, 430→464, dst).
+   Scope 0-3-1 ini mengembalikan teknik visually-hidden. Kedua input tetap
+   di DOM: galleryInput dipicu via .click() + change listener, realInput
+   (name=photos[]) di-sync via DataTransfer + ikut submit — fungsi JS utuh. */
+.sl-report-create input[type=file].sl-photo-hidden { width: 1px; max-width: 1px; min-width: 0; height: 1px; min-height: 0; padding: 0; margin: 0; border: 0; }
+@media (max-width: 768px) {
+    .sl-report-create { max-width: 100%; }
+    .sl-report-create .sl-photo-actions .btn { flex: 1 1 100%; }
+}
+@media (max-width: 480px) {
+    .sl-report-create .sl-form-actions .btn { flex: 1 1 100%; }
+}
+.sl-photo-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.sl-photo-item { position: relative; }
+.sl-photo-remove { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: rgba(255,255,255,.95); color: var(--red); font-size: 16px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.sl-photo-remove:hover { background: #fef2f2; }
+/* Panel kamera real-time: video live + tombol capture, mengikuti card SI-LPiket.
+   Root cause overflow #3: video memakai ukuran intrinsic kamera (bisa 1920px+).
+   Kunci ke lebar parent agar tidak mendorong halaman melebar. */
+.sl-camera { margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius); background: #fbfdff; padding: 14px; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow: hidden; }
+.sl-camera[hidden] { display: none; }
+.sl-camera-title { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.sl-camera video { display: block; width: 100%; max-width: 100%; height: auto; max-height: 360px; aspect-ratio: 4 / 3; object-fit: cover; background: #0f172a; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; }
+/* Kunci foto/upload ke lebar parent tanpa mengubah tampilan desktop:
+   width/max-width/min-width/box-sizing saja (track grid & tinggi
+   thumbnail desktop dibiarkan apa adanya). */
+.photo-grid { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+.photo-grid > * { min-width: 0; max-width: 100%; }
+.photo-grid img { display: block; max-width: 100%; }
+.photo-grid .caption { overflow-wrap: anywhere; word-break: break-word; }
+.sl-card form { max-width: 100%; min-width: 0; }
+.sl-card input, .sl-card select, .sl-card textarea { max-width: 100%; box-sizing: border-box; }
+/* Teks panjang tanpa spasi (judul/deskripsi/username) tidak boleh mendorong
+   card melebar; hanya memengaruhi string yang tak terputus. */
+.sl-card p, .sl-card li, .sl-card h1, .sl-card h2, .sl-card h3 { overflow-wrap: break-word; }
+/* kv-table profil (tanpa .table-wrap): sel tetap wrap. */
+.kv-table td { overflow-wrap: anywhere; word-break: break-word; }
+@media (max-width: 768px) {
+    .sl-photo-actions { gap: 12px; }
+    .sl-photo-actions .btn { flex: 1 1 100%; }
+    .sl-photo-or { flex-basis: 100%; text-align: center; }
+    .sl-photo-remove { width: 40px; height: 40px; font-size: 18px; }
+    .sl-camera { padding: 12px; }
+    .sl-camera video { max-height: 260px; }
+}
+@media (max-width: 480px) {
+    /* Layar 360-430px: tombol foto full-width satu kolom, tanpa basis 170px.
+       Root cause grid: minmax(160px,1fr) memaksa tiap kolom >=160px
+       sehingga total track > viewport 360px — longgarkan hanya di mobile. */
+    .sl-photo-actions { width: 100%; }
+    .sl-photo-actions .btn { flex: 1 1 100%; }
+    .sl-form-actions .btn { flex: 1 1 100%; }
+    .photo-grid { grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); }
+    .photo-grid img { height: auto; aspect-ratio: 4 / 3; }
+    /* Root cause kv-table: kolom pertama fixed 190px + tabel auto-layout
+       memaksa tabel minimum 190px + konten; di mobile kecilkan + fixed. */
+    .kv-table { table-layout: fixed; width: 100%; }
+    .kv-table td:first-child { width: 110px; }
+}
 .welcome-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px; }
 .empty { padding: 28px; text-align: center; color: var(--muted); }
-.sl-search { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.sl-search { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; max-width: 100%; min-width: 0; }
 .sl-search-icon { font-size: 16px; color: var(--muted); }
-.sl-search input[type=text] { flex: 1; min-width: 200px; margin-top: 0; }
-.sl-search select { width: auto; min-width: 160px; margin-top: 0; }
+.sl-search input[type=text] { flex: 1; min-width: 0; margin-top: 0; }
+.sl-search select { width: auto; min-width: 0; max-width: 100%; margin-top: 0; }
+.sl-search .btn { min-width: 0; max-width: 100%; }
 @media (max-width: 768px) {
     .sl-search .btn { flex: 1; }
     .sl-search select { flex: 1; width: 100%; }
 }
-.sl-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-.sl-toolbar .sl-search { margin-bottom: 0; flex: 1; min-width: 220px; }
+.sl-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; max-width: 100%; min-width: 0; }
+.sl-toolbar .sl-search { margin-bottom: 0; flex: 1; min-width: 0; }
+.sl-toolbar .btn { min-width: 0; max-width: 100%; }
 .sl-menu-wrap { position: relative; display: inline-block; }
 .sl-menu-btn { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 16px; line-height: 1; color: var(--ink); }
 .sl-menu-btn:hover { border-color: var(--primary); color: var(--primary); }
@@ -204,10 +324,60 @@ a.sl-page:hover { border-color: var(--primary); color: var(--primary); }
     .sl-sidebar { transform: translateX(-100%); transition: transform .25s ease; width: 264px; }
     .sl-sidebar.open { transform: translateX(0); }
     .sl-main { margin-left: 0; max-width: 100vw; }
-    .nav-toggle { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 18px; cursor: pointer; }
+    .nav-toggle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 18px; cursor: pointer; }
     .sl-topuser .who { display: none; }
     .sl-topbar { padding: 12px 16px; }
     .sl-content { padding: 16px; }
     .form-grid { grid-template-columns: 1fr; }
     .sl-card { padding: 18px; }
+    .card { padding: 18px; }
+}
+
+/* === Audit mobile spacing SI-LPiket (mobile-only, desktop tidak diubah) === */
+.sl-sidebar-close { display: none; }
+@media (max-width: 768px) {
+    /* Search: ikon disembunyikan agar input penuh satu baris, hemat ruang */
+    .sl-search-icon { display: none; }
+    .sl-toolbar { gap: 12px; }
+    .sl-toolbar .sl-search { min-width: 0; flex-basis: 100%; }
+    /* Tombol header kartu & aksi kartu: target sentuh nyaman */
+    .sl-card .btn, .card .btn { min-height: 44px; }
+    .sl-pagination { row-gap: 12px; }
+    .sl-page { min-width: 40px; height: 40px; }
+    .modal-actions { gap: 12px; }
+    .modal-actions .btn { min-height: 44px; }
+    /* Kontrol form: target sentuh + ritme vertikal antar field */
+    form .mt-2 { margin-top: 16px; }
+    input[type=text], input[type=password], input[type=file], input[type=time], textarea, select { min-height: 44px; }
+    /* Tombol Simpan/Batal dkk yang berdampingan langsung di form (kecuali form search): susun vertikal penuh */
+    .sl-card > form:not(.sl-search) > .btn,
+    .sl-card > form:not(.sl-search) > button.btn,
+    .sl-card > form:not(.sl-search) > a.btn { display: flex; width: 100%; margin-left: 0 !important; margin-top: 12px; }
+    .sl-card > form:not(.sl-search) > .btn:first-of-type,
+    .sl-card > form:not(.sl-search) > button.btn:first-of-type,
+    .sl-card > form:not(.sl-search) > a.btn:first-of-type { margin-top: 16px; }
+    /* Footer Kembali/Dashboard dkk (div aksi langsung > .btn): susun vertikal penuh */
+    .sl-card > div:has(> .btn) > .btn,
+    .sl-card > div:has(> a.btn) > a.btn { display: inline-flex; width: 100%; margin-left: 0 !important; margin-top: 12px; }
+    .sl-card > div:has(> .btn) > .btn:first-child,
+    .sl-card > div:has(> a.btn) > a.btn:first-child { margin-top: 0; }
+    .sl-card > div[style*="display:flex"]:has(> .btn) > .btn { flex: 1 1 100%; }
+    /* Header kartu inline (mis. Kepala Sekolah Lihat Semua): boleh wrap + gap */
+    .sl-card > div[style*="display: flex"],
+    .sl-card > div[style*="display:flex"] { flex-wrap: wrap; row-gap: 12px; column-gap: 12px; }
+    /* Aksi ganda Guru/Kepala Sekolah (Selesaikan/Teruskan, Selesaikan/Kembalikan): tombol penuh */
+    .sl-card form:not(.sl-search) button.btn { width: 100%; }
+    /* Sidebar mobile: tap target nyaman + tombol close, tanpa ubah desktop */
+    .sl-link { padding: 12px; margin-bottom: 4px; }
+    .sl-bell { width: 44px; height: 44px; }
+    .sl-brand { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .sl-brand-logo img { width: 40px; height: 40px; }
+    .sl-sidebar-close { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid rgba(255,255,255,.25); border-radius: 8px; background: transparent; color: #fff; font-size: 18px; cursor: pointer; flex-shrink: 0; }
+}
+@media (max-width: 480px) {
+    /* Layar kecil 360-430px: search/filter dan tombol difokuskan vertikal */
+    .sl-search select { flex-basis: 100%; }
+    .sl-search .btn { flex: 1 1 100%; }
+    .sl-card-head { row-gap: 12px; }
+    .photo-grid { grid-template-columns: 1fr; row-gap: 14px; }
 }

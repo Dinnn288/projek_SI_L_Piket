@@ -27,6 +27,13 @@ class AdminUsersFase12ATest extends TestCase
         $this->reconnect();
         Storage::fake('local');
 
+        $class = \App\Models\SchoolClass::orderBy('id')->first();
+        if (! $class) {
+            $major = \App\Models\Major::firstOrCreate(['name' => 'TEST_MAJOR_F12A'], ['status' => 'aktif']);
+            $class = \App\Models\SchoolClass::create(['major_id' => $major->id, 'name' => 'TEST_KELAS_F12A', 'status' => 'aktif']);
+        }
+        $this->ids['class'] = $class->id;
+
         $admin = UserBaru::where('username', 'f12a_admin')->first()
             ?: UserBaru::create(['name' => 'Admin F12A', 'username' => 'f12a_admin', 'password' => Hash::make('password123'), 'role' => 'admin', 'status' => 'aktif']);
         $siswa = UserBaru::where('username', 'f12a_siswa')->first()
@@ -39,6 +46,7 @@ class AdminUsersFase12ATest extends TestCase
         $this->ids = [
             'admin' => $admin->id, 'siswa' => $siswa->id,
             'guru' => $guru->id, 'kepsek' => $kepsek->id,
+            'class' => $class->id,
         ];
     }
 
@@ -47,7 +55,12 @@ class AdminUsersFase12ATest extends TestCase
         try {
             $this->reconnect();
             if (! empty($this->ids)) {
-                // Hapus user uji yang dibuat test ini by ID eksplisit.
+                // Hapus student uji + user uji yang dibuat test ini.
+                $sids = Student::whereIn('nis', ['F12ANIS001', 'F12ANIS002'])->pluck('id');
+                if ($sids->isNotEmpty()) {
+                    \App\Models\Report::whereIn('student_id', $sids)->delete();
+                    Student::whereIn('id', $sids)->delete();
+                }
                 $created = UserBaru::where('username', 'like', 'f12a\_created\_%')->pluck('id');
                 foreach ($created as $id) {
                     UserBaru::whereKey($id)->delete();
@@ -105,24 +118,36 @@ class AdminUsersFase12ATest extends TestCase
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'X', 'username' => 'f12a_created_1', 'password' => 'password123',
             'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'invalid',
+            'nis' => 'F12ANIS_X1', 'class_id' => $this->ids['class'],
         ])->assertSessionHasErrors('status');
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'X', 'username' => 'f12a_created_1', 'password' => 'password123',
             'password_confirmation' => 'beda', 'role' => 'siswa', 'status' => 'aktif',
+            'nis' => 'F12ANIS_X2', 'class_id' => $this->ids['class'],
         ])->assertSessionHasErrors('password');
 
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'User Baru F12A', 'username' => 'f12a_created_1', 'password' => 'password123',
             'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'aktif',
+            'nis' => 'F12ANIS001', 'class_id' => $this->ids['class'],
         ])->assertRedirect(route('admin.users.index'));
         $created = UserBaru::where('username', 'f12a_created_1')->firstOrFail();
         $this->assertTrue(Hash::check('password123', $created->password));
         $this->assertNotEquals('password123', $created->password);
+        $this->assertEquals('F12ANIS001', $created->student->nis);
         // Duplicate ditolak
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'Dup', 'username' => 'f12a_created_1', 'password' => 'password123',
             'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'aktif',
+            'nis' => 'F12ANIS002', 'class_id' => $this->ids['class'],
         ])->assertSessionHasErrors('username');
+        // NIS duplikat ditolak
+        $this->actingAs($this->admin())->post('/admin/users', [
+            'name' => 'Dup NIS', 'username' => 'f12a_created_nis', 'password' => 'password123',
+            'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'aktif',
+            'nis' => 'F12ANIS001', 'class_id' => $this->ids['class'],
+        ])->assertSessionHasErrors('nis');
+        $this->assertNull(UserBaru::where('username', 'f12a_created_nis')->first());
         // Login user baru berhasil (aktif)
         $this->refreshApplication();
         $this->reconnect();
@@ -132,12 +157,13 @@ class AdminUsersFase12ATest extends TestCase
     public function test_edit_password_optional_and_unique(): void
     {
         $created = UserBaru::create(['name' => 'Edit F12A', 'username' => 'f12a_created_2', 'password' => Hash::make('lama12345'), 'role' => 'guru', 'status' => 'aktif']);
+        \App\Models\Teacher::create(['user_id' => $created->id, 'nip' => 'F12ANIP002']);
         $oldHash = $created->password;
         // Password kosong -> hash lama bertahan
         $this->actingAs($this->admin())->put('/admin/users/'.$created->id, [
             'name' => 'Edit F12A Updated', 'username' => 'f12a_created_2',
             'password' => '', 'password_confirmation' => '',
-            'role' => 'guru', 'status' => 'aktif',
+            'role' => 'guru', 'status' => 'aktif', 'nip' => 'F12ANIP002',
         ])->assertRedirect(route('admin.users.index'));
         $this->assertEquals($oldHash, $created->fresh()->password);
         $this->assertTrue(Hash::check('lama12345', $created->fresh()->password));
@@ -145,33 +171,35 @@ class AdminUsersFase12ATest extends TestCase
         $this->actingAs($this->admin())->put('/admin/users/'.$created->id, [
             'name' => 'Edit F12A Updated', 'username' => 'f12a_created_2',
             'password' => 'baru12345', 'password_confirmation' => 'baru12345',
-            'role' => 'guru', 'status' => 'aktif',
+            'role' => 'guru', 'status' => 'aktif', 'nip' => 'F12ANIP002',
         ])->assertRedirect(route('admin.users.index'));
         $this->assertTrue(Hash::check('baru12345', $created->fresh()->password));
         // Username milik sendiri boleh; milik akun lain ditolak
         $this->actingAs($this->admin())->put('/admin/users/'.$created->id, [
             'name' => 'X', 'username' => 'f12a_created_2',
-            'role' => 'guru', 'status' => 'aktif',
+            'role' => 'guru', 'status' => 'aktif', 'nip' => 'F12ANIP002',
         ])->assertRedirect(route('admin.users.index'));
         $this->actingAs($this->admin())->put('/admin/users/'.$created->id, [
             'name' => 'X', 'username' => 'f12a_admin',
-            'role' => 'guru', 'status' => 'aktif',
+            'role' => 'guru', 'status' => 'aktif', 'nip' => 'F12ANIP002',
         ])->assertSessionHasErrors('username');
     }
 
     public function test_status_login_and_self_delete_protection(): void
     {
         $created = UserBaru::create(['name' => 'Status F12A', 'username' => 'f12a_created_3', 'password' => Hash::make('password123'), 'role' => 'siswa', 'status' => 'nonaktif']);
+        \App\Models\Student::create(['user_id' => $created->id, 'nis' => 'F12ANIS003', 'class_id' => $this->ids['class']]);
         $this->refreshApplication();
         $this->reconnect();
         $this->post('/login', ['username' => 'f12a_created_3', 'password' => 'password123']);
         $this->assertGuest();
-        // Aktifkan -> bisa login
+        // Aktifkan -> bisa login (kirim NIS/kelas milik sendiri agar validasi edit lolos)
         $admin = UserBaru::where('username', 'f12a_admin')->firstOrFail();
         $this->actingAs($admin)->put('/admin/users/'.$created->id, [
             'name' => 'Status F12A', 'username' => 'f12a_created_3',
             'role' => 'siswa', 'status' => 'aktif',
-        ]);
+            'nis' => 'F12ANIS003', 'class_id' => $this->ids['class'],
+        ])->assertRedirect(route('admin.users.index'));
         $this->refreshApplication();
         $this->reconnect();
         $this->post('/login', ['username' => 'f12a_created_3', 'password' => 'password123'])->assertRedirect('/siswa');

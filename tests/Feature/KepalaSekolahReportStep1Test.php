@@ -191,10 +191,10 @@ class KepalaSekolahReportStep1Test extends TestCase
 
     public function test_non_forwarded_and_unknown_404(): void
     {
-        // Kepsek boleh melihat detail seluruh laporan (monitoring), tanpa 404
-        // untuk status non-forward. Aksi tetap dibatasi status diteruskan.
+        // A1: kepsek hanya boleh buka diteruskan / dalam_penanganan
+        // (monitoring) / pernah forwarded. Menunggu tanpa riwayat -> 404.
         $other = $this->createOtherStatusReport('W-404', 'menunggu');
-        $this->actingAs($this->kepsek())->get('/kepala-sekolah/laporan/'.$other->id)->assertStatus(200);
+        $this->actingAs($this->kepsek())->get('/kepala-sekolah/laporan/'.$other->id)->assertStatus(404);
         $this->actingAs($this->kepsek())->get('/kepala-sekolah/laporan/999999')->assertStatus(404);
     }
 

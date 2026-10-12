@@ -17,11 +17,17 @@
         </div>
         <div class="mt-2">
             <label for="password">Password (min. 8 karakter)</label>
-            <input id="password" type="password" name="password" required>
+            <div class="sl-pw-field" data-sl-pw-field>
+                <input id="password" type="password" name="password" required>
+                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
+            </div>
         </div>
         <div class="mt-2">
             <label for="password_confirmation">Konfirmasi Password</label>
-            <input id="password_confirmation" type="password" name="password_confirmation" required>
+            <div class="sl-pw-field" data-sl-pw-field>
+                <input id="password_confirmation" type="password" name="password_confirmation" required>
+                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
+            </div>
         </div>
         <div class="mt-2">
             <label for="nip">NIP</label>

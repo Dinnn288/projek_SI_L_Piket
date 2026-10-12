@@ -105,6 +105,7 @@ class AttachmentSecurityFase141Test extends TestCase
             'title' => 'F141 Report', 'category_id' => $this->ids['cat'],
             'location' => 'Kelas - lokasi', 'description' => 'Deskripsi F141',
             'photos' => [$this->makePhoto('bukti.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $report = Report::where('title', 'F141 Report')->firstOrFail();
         $att = $report->attachments()->firstOrFail();

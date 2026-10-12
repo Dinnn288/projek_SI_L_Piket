@@ -125,7 +125,8 @@ class GuruTakeoverStep3Test extends TestCase
     public function test_offduty_cannot_see_or_takeover(): void
     {
         $rep = $this->createContinuableReport('Lanjut-off');
-        $this->actingAs($this->guru('f7s3_guru_d'))->get('/guru/laporan/'.$rep->id)->assertStatus(403);
+        // A2: tak-berhak -> 404 (samarkan eksistensi), bukan 403.
+        $this->actingAs($this->guru('f7s3_guru_d'))->get('/guru/laporan/'.$rep->id)->assertStatus(404);
         $this->actingAs($this->guru('f7s3_guru_d'))
             ->post('/guru/laporan/'.$rep->id.'/takeover')
             ->assertSessionHas('error');
@@ -150,8 +151,8 @@ class GuruTakeoverStep3Test extends TestCase
         $this->assertNotNull($takeover);
         $this->assertEquals('claimed', $takeover->action);
         $this->assertEquals($this->guru('f7s3_guru_b')->id, (int) $takeover->user_id);
-        // Guru lama bisa akses? tidak lagi sebagai pemilik
-        $this->actingAs($this->guru('f7s3_guru_a'))->get('/guru/laporan/'.$rep->id)->assertStatus(403);
+        // Guru lama bisa akses? tidak lagi sebagai pemilik -> 404 (A2).
+        $this->actingAs($this->guru('f7s3_guru_a'))->get('/guru/laporan/'.$rep->id)->assertStatus(404);
         $this->actingAs($this->guru('f7s3_guru_a'))
             ->post('/guru/laporan/'.$rep->id.'/takeover')
             ->assertSessionHas('error', 'Laporan sudah diambil oleh Guru Piket lain.');

@@ -127,6 +127,7 @@ class NotificationClaimStep2Test extends TestCase
             'title' => $title, 'category_id' => $cat->id,
             'location' => 'Kelas - lokasi', 'description' => 'Deskripsi '.$title,
             'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
 
         return Report::where('title', $title)->firstOrFail();

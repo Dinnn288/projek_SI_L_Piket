@@ -108,6 +108,7 @@ class NotificationReportCreatedStep1Test extends TestCase
             'location' => 'TEST_KELAS_F9S1 - depan',
             'description' => 'Deskripsi '.$title,
             'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ]);
     }
 
@@ -178,6 +179,7 @@ class NotificationReportCreatedStep1Test extends TestCase
         $this->actingAs($this->siswa())->post('/siswa/laporan', [
             'title' => 'Gagal', 'category_id' => $cat->id,
             'location' => 'x', 'description' => 'y',
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertSessionHasErrors('photos');
         $this->assertEquals(0, Report::where('title', 'Gagal')->count());
         $this->assertEquals(0, Notification::whereHas('report', fn ($q) => $q->where('title', 'Gagal'))->count());
@@ -192,6 +194,7 @@ class NotificationReportCreatedStep1Test extends TestCase
             'location' => 'x', 'description' => 'y',
             'photos' => [$this->makePhoto('a.png')],
             'user_id' => $dId, 'teacher_id' => 999, 'assigned_teacher_id' => 999,
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $report = Report::where('title', 'N-manip')->firstOrFail();
         $stA = Student::where('nis', 'F9S1NIS001')->first();

@@ -85,6 +85,7 @@ class SiswaReportStep2Test extends TestCase
             'location' => 'TEST_KELAS_F6S2 - lokasi',
             'description' => 'Deskripsi '.$title,
             'photos' => [$this->makePhoto('a.png', 100)],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ]);
     }
 

@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
         ]);
+        // B2.1: trim identitas (username/nis/nip) sebelum validasi,
+        // sebelum ValidateAuthenticatedUser agar kredensial konsisten.
+        $middleware->prependToGroup('web', \App\Http\Middleware\TrimIdentityInput::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\ValidateAuthenticatedUser::class);
         $middleware->redirectGuestsTo(fn () => route('login'));
     })

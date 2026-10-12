@@ -126,6 +126,7 @@ class SecurityFase14Test extends TestCase
             'title' => $title, 'category_id' => $this->ids['cat'],
             'location' => 'Kelas - lokasi', 'description' => 'Deskripsi '.$title,
             'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
 
         return Report::where('title', $title)->firstOrFail();
@@ -170,6 +171,7 @@ class SecurityFase14Test extends TestCase
             'description' => 'D', 'photos' => [$this->makePhoto('b.png')],
             'student_id' => 999, 'class_id' => 999, 'priority' => 'rendah',
             'status' => 'selesai', 'assigned_teacher_id' => 1,
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $r2 = Report::where('title', 'SEC-2')->firstOrFail();
         $stA = Student::where('nis', 'F14NIS_A')->firstOrFail();
@@ -202,6 +204,7 @@ class SecurityFase14Test extends TestCase
         $this->actingAs($this->u('siswaA'))->post('/siswa/laporan', [
             'title' => $payload, 'category_id' => $this->ids['cat'], 'location' => 'L',
             'description' => 'D', 'photos' => [$this->makePhoto('a.png')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ])->assertRedirect();
         $rep = Report::where('description', 'D')->latest('id')->firstOrFail();
         $res = $this->actingAs($this->u('siswaA'))->get('/siswa/laporan/'.$rep->id);
@@ -213,12 +216,14 @@ class SecurityFase14Test extends TestCase
             'title' => 'SEC-X', 'category_id' => $this->ids['cat'], 'location' => 'L',
             'description' => 'D',
             'photos' => [\Illuminate\Http\UploadedFile::fake()->create('shell.php', 10, 'application/x-php')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ];
         $this->actingAs($this->u('siswaA'))->post('/siswa/laporan', $bad)->assertSessionHasErrors('photos.0');
         $txt = [
             'title' => 'SEC-Y', 'category_id' => $this->ids['cat'], 'location' => 'L',
             'description' => 'D',
             'photos' => [\Illuminate\Http\UploadedFile::fake()->create('doc.txt', 10, 'text/plain')],
+            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
         ];
         $this->actingAs($this->u('siswaA'))->post('/siswa/laporan', $txt)->assertSessionHasErrors('photos.0');
         // CSRF: middleware bawaan Laravel aktif (tidak dikecualikan di

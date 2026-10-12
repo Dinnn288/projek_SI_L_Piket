@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TeacherController extends Controller
@@ -51,7 +52,7 @@ class TeacherController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users_baru,username'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'status' => ['required', 'in:aktif,nonaktif'],
-            'nip' => ['required', 'string', 'max:50'],
+            'nip' => ['required', 'string', 'max:50', Rule::unique('teachers', 'nip')],
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
@@ -95,7 +96,7 @@ class TeacherController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users_baru,username,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'status' => ['required', 'in:aktif,nonaktif'],
-            'nip' => ['required', 'string', 'max:50'],
+            'nip' => ['required', 'string', 'max:50', Rule::unique('teachers', 'nip')->ignore($teacher->id)],
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 

@@ -18,15 +18,24 @@
         @method('PUT')
         <div class="mt-2">
             <label for="current_password">Password Saat Ini <span class="required-mark">*</span></label>
-            <input id="current_password" type="password" name="current_password" required autocomplete="current-password">
+            <div class="sl-pw-field" data-sl-pw-field>
+                <input id="current_password" type="password" name="current_password" required autocomplete="current-password">
+                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
+            </div>
         </div>
         <div class="mt-2">
             <label for="password">Password Baru (min. 8 karakter) <span class="required-mark">*</span></label>
-            <input id="password" type="password" name="password" required autocomplete="new-password">
+            <div class="sl-pw-field" data-sl-pw-field>
+                <input id="password" type="password" name="password" required autocomplete="new-password">
+                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
+            </div>
         </div>
         <div class="mt-2">
             <label for="password_confirmation">Konfirmasi Password Baru <span class="required-mark">*</span></label>
-            <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password">
+            <div class="sl-pw-field" data-sl-pw-field>
+                <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password">
+                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
+            </div>
         </div>
         <div class="form-actions">
             <button type="submit" class="btn">Ubah Password</button>
