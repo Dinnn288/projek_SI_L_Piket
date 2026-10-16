@@ -28,8 +28,9 @@ class AdminUsersUnifiedFormTest extends TestCase
     {
         config(['database.default' => 'mysql']);
         DB::purge('mysql');
-        config(['database.connections.mysql.database' => 'si_l_piket']);
+        config(['database.connections.mysql.database' => 'si_l_piket_test']);
         DB::reconnect('mysql');
+        \Tests\TestDatabaseGuard::assertTestDatabaseSafe();
     }
 
     protected function setUp(): void
@@ -86,7 +87,7 @@ class AdminUsersUnifiedFormTest extends TestCase
     {
         return [
             'name' => 'Nama '.$username, 'username' => $username,
-            'password' => 'password123', 'password_confirmation' => 'password123',
+            'password' => 'password123',
             'role' => $role, 'status' => 'aktif',
         ];
     }
@@ -102,7 +103,27 @@ class AdminUsersUnifiedFormTest extends TestCase
         $this->assertStringContainsString('name="class_id"', $html);
         $this->assertEquals(1, substr_count($html, 'name="nis"'), 'NIS tepat satu field.');
         $this->assertEquals(1, substr_count($html, 'name="nip"'), 'NIP tepat satu field.');
+        // Satu kolom password: tanpa Konfirmasi Password.
+        $this->assertStringContainsString('name="password"', $html);
+        $this->assertStringNotContainsString('name="password_confirmation"', $html);
+        $this->assertEquals(1, substr_count($html, 'name="password"'), 'Password tepat satu field.');
         $this->assertStringContainsString("action=\"".route('admin.users.store').'"', $html);
+    }
+
+    public function test_create_without_confirmation_hashes_password(): void
+    {
+        // Tanpa password_confirmation: berhasil + password di-hash.
+        $this->actingAs($this->admin())->post('/admin/users', $this->base('uf_created_nc1', 'admin'))
+            ->assertRedirect(route('admin.users.index'));
+        $u = UserBaru::where('username', 'uf_created_nc1')->firstOrFail();
+        $this->assertTrue(Hash::check('password123', $u->password));
+        $this->assertNotEquals('password123', $u->password);
+        // Password pendek tetap ditolak.
+        $short = $this->base('uf_created_nc2', 'admin');
+        $short['password'] = 'pendek';
+        $this->actingAs($this->admin())->post('/admin/users', $short)
+            ->assertSessionHasErrors('password');
+        $this->assertNull(UserBaru::where('username', 'uf_created_nc2')->first());
     }
 
     public function test_1_create_siswa_valid(): void

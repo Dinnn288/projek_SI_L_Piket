@@ -5,11 +5,9 @@
 @section('content')
 <div class="sl-card">
     <h1 style="font-size: 24px; color: #1a3d5c;">Halo, {{ auth()->user()->name }}</h1>
-    <p class="muted text-sm mt-1">Hari ini: {{ $day ?? 'di luar jadwal (minggu)' }} | Jam Operasional: {{ str_replace(':', '.', $operationalStart ?? '07:00') }} - {{ str_replace(':', '.', $operationalEnd ?? '16:00') }} WIB | Waktu server: {{ ($serverNow ?? now())->format('d M Y H:i:s') }} WIB | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }}</p>
+    <p class="muted text-sm mt-1">Hari ini: {{ $day ?? 'di luar jadwal (minggu)' }} | Waktu server: {{ ($serverNow ?? now())->format('d M Y H:i:s') }} WIB | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }}</p>
     @if (! $onDutyDay)
         <p style="margin-top: 10px; color: #b7950b;">Anda tidak terjadwal piket hari ini, sehingga laporan menunggu tidak ditampilkan dan tombol Ambil Laporan dinonaktifkan.</p>
-    @elseif (! $withinHours)
-        <p style="margin-top: 10px; color: #b7950b;">Saat ini di luar jam operasional {{ str_replace(':', '.', $operationalStart ?? '07:00') }}-{{ str_replace(':', '.', $operationalEnd ?? '16:00') }} WIB. Laporan menunggu ditampilkan, tetapi pengambilan ditolak server.</p>
     @endif
     <div class="sl-grid stat-compact">
         <div class="stat"><h3>Menunggu</h3><div class="value">{{ $waitingCount }}</div></div>

@@ -7,8 +7,8 @@ use App\Http\Controllers\Admin\ReportCategoryController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AccountWhatsappController;
 use App\Http\Controllers\Admin\SchoolClassController;
-use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -50,15 +50,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('users', UserController::class)->except(['show']);
+    // Kredensial WA: status (GET) + kirim/ulang/batal (POST), khusus admin.
+    Route::get('/users/whatsapp/{id}', [AccountWhatsappController::class, 'show'])->name('users.wa.show');
+    Route::post('/users/whatsapp/{id}/send', [AccountWhatsappController::class, 'send'])->name('users.wa.send');
+    Route::post('/users/whatsapp/{id}/retry', [AccountWhatsappController::class, 'retry'])->name('users.wa.retry');
+    Route::post('/users/whatsapp/{id}/cancel', [AccountWhatsappController::class, 'cancel'])->name('users.wa.cancel');
     Route::resource('majors', MajorController::class)->except(['show']);
     Route::resource('classes', SchoolClassController::class)->except(['show']);
     Route::resource('students', StudentController::class)->except(['show']);
     Route::resource('teachers', TeacherController::class)->except(['show']);
     Route::resource('duty-schedules', DutyScheduleController::class)->except(['show']);
     Route::resource('report-categories', ReportCategoryController::class)->except(['show']);
-
-    Route::get('/pengaturan/jam-operasional', [SettingController::class, 'edit'])->name('settings.operational-hours.edit');
-    Route::put('/pengaturan/jam-operasional', [SettingController::class, 'update'])->name('settings.operational-hours.update');
 
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

@@ -29,7 +29,6 @@ class DashboardController extends Controller
         $teacher = $this->currentTeacher($request);
         $day = GuruDutyService::todayDay();
         $onDutyDay = GuruDutyService::isOnDutyDay($teacher);
-        $withinHours = GuruDutyService::isWithinHours();
 
         $waiting = collect();
         $waitingCount = 0;
@@ -70,15 +69,13 @@ class DashboardController extends Controller
             ->where('is_read', false)
             ->count();
 
-        $operationalStart = GuruDutyService::start();
-        $operationalEnd = GuruDutyService::end();
         $serverNow = GuruDutyService::now();
 
         return view('guru.dashboard', compact(
-            'teacher', 'day', 'onDutyDay', 'withinHours',
+            'teacher', 'day', 'onDutyDay',
             'waiting', 'waitingCount', 'continued', 'continuedCount',
             'mine', 'mineActive', 'mineTotal', 'notifications', 'unreadCount',
-            'operationalStart', 'operationalEnd', 'serverNow'
+            'serverNow'
         ));
     }
 }

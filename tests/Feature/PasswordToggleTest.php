@@ -24,8 +24,9 @@ class PasswordToggleTest extends TestCase
     {
         config(['database.default' => 'mysql']);
         DB::purge('mysql');
-        config(['database.connections.mysql.database' => 'si_l_piket']);
+        config(['database.connections.mysql.database' => 'si_l_piket_test']);
         DB::reconnect('mysql');
+        \Tests\TestDatabaseGuard::assertTestDatabaseSafe();
     }
 
     protected function setUp(): void
@@ -137,7 +138,7 @@ class PasswordToggleTest extends TestCase
     {
         $admin = UserBaru::findOrFail($this->ids['admin']);
 
-        foreach (['/admin/users/create' => ['password', 'password_confirmation'],
+        foreach (['/admin/users/create' => ['password'],
             '/admin/students/create' => ['password', 'password_confirmation'],
             '/admin/teachers/create' => ['password', 'password_confirmation']] as $url => $names) {
             $res = $this->actingAs($admin)->get($url);

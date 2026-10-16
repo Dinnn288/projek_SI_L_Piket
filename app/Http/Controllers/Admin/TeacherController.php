@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use App\Models\UserBaru;
+use App\Support\HandlesNipUniqueViolation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class TeacherController extends Controller
 {
+    use HandlesNipUniqueViolation;
+
     public function index(Request $request): View
     {
         $query = Teacher::with(['userBaru']);
@@ -56,7 +59,9 @@ class TeacherController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
-        DB::transaction(function () use ($data) {
+        // B2.2-H2: race NIP (lolos validasi bersamaan) ditangkap sebagai
+        // error validasi via UNIQUE DB; rollback otomatis oleh transaction.
+        $this->transactionalNipSafe(function () use ($data) {
             $user = UserBaru::create([
                 'name' => $data['name'],
                 'username' => $data['username'],
@@ -100,7 +105,7 @@ class TeacherController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
-        DB::transaction(function () use ($teacher, $user, $data) {
+        $this->transactionalNipSafe(function () use ($teacher, $user, $data) {
             $user->name = $data['name'];
             $user->username = $data['username'];
             $user->status = $data['status'];

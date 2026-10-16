@@ -5,7 +5,7 @@
 @section('content')
 <div class="sl-card">
     <h1>Laporan Menunggu</h1>
-    <p class="muted text-sm mt-1">Hari ini: {{ $day ?? '-' }} | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }} | Jam piket: 07.00-16.00</p>
+    <p class="muted text-sm mt-1">Hari ini: {{ $day ?? '-' }} | Status piket: {{ $onDutyDay ? 'Bertugas' : 'Tidak bertugas' }}</p>
     @if (! $onDutyDay)
         <p style="color: #b7950b; margin-top: 10px;">Daftar disembunyikan karena Anda tidak terjadwal piket hari ini.</p>
     @elseif ($waiting->isEmpty())

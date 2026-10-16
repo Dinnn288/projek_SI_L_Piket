@@ -11,6 +11,7 @@ use App\Models\ReportCategory;
 use App\Models\Student;
 use App\Services\GuruDutyService;
 use App\Support\ReportIdempotency;
+use App\Support\SecureAttachment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -99,7 +100,14 @@ class ReportController extends Controller
         try {
             // Replay: key sudah pernah sukses (milik user ini, karena
             // prefix user_id) → redirect ke laporan yang sama.
-            $existing = ReportIdempotency::result($student->user_id, $idempotencyKey);
+            // Baca cache dapat gagal (cache down) — perlakukan sebagai
+            // tanpa marker agar request diproses aman, bukan 500.
+            try {
+                $existing = ReportIdempotency::result($student->user_id, $idempotencyKey);
+            } catch (\Throwable $e) {
+                report($e);
+                $existing = null;
+            }
 
             if ($existing !== null) {
                 if ($existing['fingerprint'] !== $fingerprint) {
@@ -192,8 +200,18 @@ class ReportController extends Controller
                 return back()->withErrors(['photos' => 'Gagal menyimpan laporan. Silakan coba lagi.'])->withInput();
             }
 
-            // Simpan hasil idempotensi HANYA setelah commit sukses.
-            ReportIdempotency::store($student->user_id, $idempotencyKey, $report->id, $fingerprint);
+            // Simpan hasil idempotensi HANYA setelah commit sukses, lalu
+            // verifikasi baca-ulang. Bila marker gagal (cache put/get
+            // gagal), laporan yang sudah ter-commit TIDAK dihapus; user
+            // diarahkan memeriksa daftar laporan sebelum mengirim ulang,
+            // karena retry key-sama tanpa marker dapat membuat laporan
+            // kedua. Jaminan penuh butuh penyimpanan persisten (tahap lain).
+            $markerOk = ReportIdempotency::storeVerified($student->user_id, $idempotencyKey, $report->id, $fingerprint);
+
+            if (! $markerOk) {
+                return redirect()->route('siswa.reports.index')
+                    ->with('warning', 'Laporan tersimpan, tetapi penanda pengiriman gagal dicatat. Periksa daftar laporan Anda sebelum mengirim ulang agar tidak duplikat.');
+            }
 
             return redirect()->route('siswa.reports.show', $report)
                 ->with('success', 'Laporan berhasil dikirim.');
@@ -231,12 +249,13 @@ class ReportController extends Controller
             abort(404);
         }
 
-        $absolutePath = Storage::disk('local')->path($attachment->file_patch);
+        // B3.5: path dikungkung di reports/ + MIME isi-file + header aman.
+        $resolved = SecureAttachment::resolve($attachment->file_patch);
 
-        if (! is_file($absolutePath)) {
+        if ($resolved === null) {
             abort(404);
         }
 
-        return response()->file($absolutePath);
+        return SecureAttachment::response($resolved);
     }
 }

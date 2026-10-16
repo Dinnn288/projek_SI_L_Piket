@@ -10,12 +10,12 @@ use App\Models\ReportHistory;
 use App\Models\Teacher;
 use App\Models\UserBaru;
 use App\Services\GuruDutyService;
+use App\Support\SecureAttachment;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -37,7 +37,6 @@ class ReportController extends Controller
         $teacher = $this->currentTeacher($request);
         $day = GuruDutyService::todayDay();
         $onDutyDay = GuruDutyService::isOnDutyDay($teacher);
-        $withinHours = GuruDutyService::isWithinHours();
 
         $waiting = collect();
         $continued = collect();
@@ -66,13 +65,11 @@ class ReportController extends Controller
             ->latest()
             ->paginate(10, ['*'], 'mine_page')->withQueryString();
 
-        $operationalStart = GuruDutyService::start();
-        $operationalEnd = GuruDutyService::end();
         $serverNow = GuruDutyService::now();
 
         return view('guru.reports.index', compact(
-            'teacher', 'day', 'onDutyDay', 'withinHours', 'waiting', 'continued', 'mine',
-            'operationalStart', 'operationalEnd', 'serverNow'
+            'teacher', 'day', 'onDutyDay', 'waiting', 'continued', 'mine',
+            'serverNow'
         ));
     }
 
@@ -136,13 +133,14 @@ class ReportController extends Controller
             abort(404);
         }
 
-        $absolutePath = Storage::disk('local')->path($attachment->file_patch);
+        // B3.5: path dikungkung di reports/ + MIME isi-file + header aman.
+        $resolved = SecureAttachment::resolve($attachment->file_patch);
 
-        if (! is_file($absolutePath)) {
+        if ($resolved === null) {
             abort(404);
         }
 
-        return response()->file($absolutePath);
+        return SecureAttachment::response($resolved);
     }
 
     public function claim(Request $request, Report $report): RedirectResponse

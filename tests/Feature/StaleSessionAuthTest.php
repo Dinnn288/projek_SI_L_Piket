@@ -15,8 +15,9 @@ class StaleSessionAuthTest extends TestCase
     {
         config(['database.default' => 'mysql']);
         DB::purge('mysql');
-        config(['database.connections.mysql.database' => 'si_l_piket']);
+        config(['database.connections.mysql.database' => 'si_l_piket_test']);
         DB::reconnect('mysql');
+        \Tests\TestDatabaseGuard::assertTestDatabaseSafe();
     }
 
     protected function setUp(): void

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Report;
-use App\Models\Setting;
 use App\Models\Teacher;
 use Carbon\Carbon;
 
@@ -12,28 +11,13 @@ use Carbon\Carbon;
  *
  * Struktur aktual duty_schedules: id, teacher_id, day (enum
  * senin|selasa|rabu|kamis|jumat|sabtu), timestamps. Tidak ada kolom
- * jam_mulai/jam_selesai, sehingga penjadwalan bersifat HARIAN dan
- * jam operasional ditegakkan di level aplikasi memakai pengaturan
- * Admin (settings: operational_start_time/operational_end_time,
- * default 07:00-16:00) dengan waktu server Asia/Jakarta.
+ * jam_mulai/jam_selesai, sehingga penjadwalan bersifat HARIAN:
+ * guru yang terjadwal pada hari ini dapat mengambil laporan kapan
+ * saja tanpa batasan jam operasional.
  */
 class GuruDutyService
 {
     public const TIMEZONE = 'Asia/Jakarta';
-
-    public const DEFAULT_START = '07:00';
-
-    public const DEFAULT_END = '16:00';
-
-    public static function start(): string
-    {
-        return (string) Setting::get('operational_start_time', self::DEFAULT_START);
-    }
-
-    public static function end(): string
-    {
-        return (string) Setting::get('operational_end_time', self::DEFAULT_END);
-    }
 
     public static function now(): Carbon
     {
@@ -51,18 +35,6 @@ class GuruDutyService
             6 => 'sabtu',
             default => null, // minggu tidak ada di enum duty_schedules
         };
-    }
-
-    public static function isWithinHours(?Carbon $at = null): bool
-    {
-        $now = ($at ? $at->copy()->setTimezone(self::TIMEZONE) : self::now())->format('H:i');
-
-        return $now >= self::start() && $now <= self::end();
-    }
-
-    public static function isWithinHoursAt(string $time): bool
-    {
-        return $time >= self::start() && $time <= self::end();
     }
 
     public static function isOnDutyDay(Teacher $teacher): bool
@@ -83,10 +55,6 @@ class GuruDutyService
     {
         if (! self::isOnDutyDay($teacher)) {
             return ['ok' => false, 'message' => 'Anda tidak sedang bertugas sebagai Guru Piket hari ini.'];
-        }
-
-        if (! self::isWithinHours()) {
-            return ['ok' => false, 'message' => 'Pengambilan laporan hanya dapat dilakukan pada jam piket '.str_replace(':', '.', self::start()).'-'.str_replace(':', '.', self::end()).'.'];
         }
 
         return ['ok' => true, 'message' => ''];

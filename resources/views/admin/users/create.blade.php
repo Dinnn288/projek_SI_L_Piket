@@ -23,13 +23,6 @@
             </div>
         </div>
         <div class="mt-2">
-            <label for="password_confirmation">Konfirmasi Password</label>
-            <div class="sl-pw-field" data-sl-pw-field>
-                <input id="password_confirmation" type="password" name="password_confirmation" required>
-                <button type="button" class="sl-pw-toggle" data-sl-pw-toggle aria-label="Tampilkan password" aria-pressed="false" title="Tampilkan password"></button>
-            </div>
-        </div>
-        <div class="mt-2">
             <label for="role">Role</label>
             <select id="role" name="role" required data-sl-user-role>
                 <option value="admin" @selected(old('role') === 'admin')>Admin</option>
@@ -61,6 +54,8 @@
             var nisWrap = document.querySelector('[data-sl-user-nis-wrap]');
             var nipWrap = document.querySelector('[data-sl-user-nip-wrap]');
             var classWrap = document.querySelector('[data-sl-user-class-wrap]');
+            var waWrap = document.querySelector('[data-sl-user-wa-wrap]');
+            var wa = document.getElementById('wa_number');
             var nis = document.getElementById('nis');
             var nip = document.getElementById('nip');
             var classId = document.getElementById('class_id');
@@ -69,14 +64,17 @@
                 var v = role.value;
                 var isSiswa = v === 'siswa';
                 var isGuru = v === 'guru';
+                var waAllowed = isSiswa || isGuru || v === 'kepala_sekolah';
                 nisWrap.style.display = isSiswa ? '' : 'none';
                 nipWrap.style.display = isGuru ? '' : 'none';
                 classWrap.style.display = isSiswa ? '' : 'none';
+                if (waWrap) waWrap.style.display = waAllowed ? '' : 'none';
                 // Nilai field yang disembunyikan dikosongkan agar NIS tidak
                 // tertukar ke NIP (dan sebaliknya) saat role diganti.
                 if (!isSiswa && nis) nis.value = '';
                 if (!isGuru && nip) nip.value = '';
                 if (!isSiswa && classId) classId.value = '';
+                if (!waAllowed && wa) wa.value = '';
                 if (nis) nis.required = isSiswa;
                 if (nip) nip.required = isGuru;
                 if (classId) classId.required = isSiswa;
@@ -85,6 +83,11 @@
             sync();
         })();
         </script>
+        <div class="mt-2" data-sl-user-wa-wrap>
+            <label for="wa_number">Nomor WhatsApp penerima (opsional, hanya siswa/guru/kepala sekolah)</label>
+            <input id="wa_number" type="tel" name="wa_number" value="{{ old('wa_number') }}" maxlength="25" inputmode="tel" placeholder="08xxxxxxxxxx">
+            <p class="muted text-sm mt-1">Setelah akun tersimpan, Anda diminta memeriksa kembali data sebelum pesan dikirim.</p>
+        </div>
         <div class="mt-2">
             <label for="status">Status</label>
             <select id="status" name="status" required>

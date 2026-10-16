@@ -14,6 +14,15 @@ return [
     |
     */
 
+    'fonnte' => [
+        // Token Fonnte: isi via environment FONNTE_API_TOKEN setelah
+        // pemilik proyek membuat akun dan menghubungkan perangkat.
+        // Jangan menulis token langsung di file ini.
+        'token' => env('FONNTE_API_TOKEN'),
+        'url' => env('FONNTE_API_URL', 'https://api.fonnte.com/send'),
+        'timeout' => (int) env('FONNTE_TIMEOUT', 30),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

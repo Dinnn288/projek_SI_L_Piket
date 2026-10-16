@@ -26,8 +26,9 @@ class GuruReportStep1Test extends TestCase
     {
         config(['database.default' => 'mysql']);
         DB::purge('mysql');
-        config(['database.connections.mysql.database' => 'si_l_piket']);
+        config(['database.connections.mysql.database' => 'si_l_piket_test']);
         DB::reconnect('mysql');
+        \Tests\TestDatabaseGuard::assertTestDatabaseSafe();
     }
 
     private function makePhoto(string $name): UploadedFile
@@ -145,13 +146,6 @@ class GuruReportStep1Test extends TestCase
         return Teacher::where('user_id', $this->guru($username)->id)->firstOrFail();
     }
 
-    private function withinHours(): bool
-    {
-        Carbon::setTestNow(null);
-
-        return GuruDutyService::isWithinHours();
-    }
-
     private function freezeMorning(): void
     {
         Carbon::setTestNow(Carbon::today()->setTime(9, 0));
@@ -172,11 +166,8 @@ class GuruReportStep1Test extends TestCase
         $rep = $this->createReport('R-wait');
         $res = $this->actingAs($this->guru('f7s1_guru_a'))->get('/guru/laporan/'.$rep->id);
         $res->assertStatus(200);
-        if ($this->withinHours()) {
-            $res->assertSee('Ambil Laporan');
-        } else {
-            $res->assertSee('07.00-16.00');
-        }
+        // Tanpa batas jam: guru piket selalu dapat mengambil kapan saja.
+        $res->assertSee('Ambil Laporan');
     }
 
     public function test_show_waiting_by_offduty_guru_rejected(): void
@@ -264,14 +255,15 @@ class GuruReportStep1Test extends TestCase
         $this->get('/guru/laporan')->assertRedirect('/login');
     }
 
-    public function test_claim_rejected_outside_hours(): void
+    public function test_claim_allowed_at_night_for_onduty_guru(): void
     {
+        // Tanpa batas jam: guru piket dapat mengambil kapan saja.
         Carbon::setTestNow(Carbon::today()->setTime(18, 0));
         $rep = $this->createReport('R-night');
         $this->actingAs($this->guru('f7s1_guru_a'))
             ->post('/guru/laporan/'.$rep->id.'/claim')
-            ->assertSessionHas('error', 'Pengambilan laporan hanya dapat dilakukan pada jam piket 07.00-16.00.');
-        $this->assertNull($rep->fresh()->assigned_teacher_id);
+            ->assertSessionHas('success', 'Laporan berhasil diambil.');
+        $this->assertNotNull($rep->fresh()->assigned_teacher_id);
         Carbon::setTestNow(null);
     }
 

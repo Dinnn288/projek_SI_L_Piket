@@ -87,6 +87,40 @@ class ReportIdempotency
         );
     }
 
+    /**
+     * Simpan marker lalu verifikasi baca-ulang (Tahap B1-fix).
+     *
+     * Mengembalikan true bila marker terbukti terbaca kembali dengan
+     * report_id + fingerprint yang sama. False berarti cache gagal
+     * (put gagal atau baca-ulang gagal) — pemanggil TIDAK boleh
+     * menyatakan sukses idempoten; harus memberi tahu user agar
+     * memeriksa daftar laporan sebelum mengirim ulang, karena retry
+     * dengan key sama tidak akan menemukan marker dan dapat membuat
+     * laporan kedua. Laporan yang sudah ter-commit TIDAK dihapus.
+     */
+    public static function storeVerified(int|string $userId, string $key, int $reportId, string $fingerprint): bool
+    {
+        try {
+            self::store($userId, $key, $reportId, $fingerprint);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return false;
+        }
+
+        try {
+            $readBack = self::result($userId, $key);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return false;
+        }
+
+        return $readBack !== null
+            && $readBack['report_id'] === $reportId
+            && $readBack['fingerprint'] === $fingerprint;
+    }
+
     public static function lock(int|string $userId, string $key): \Illuminate\Contracts\Cache\Lock
     {
         return Cache::lock(self::lockKey($userId, $key), self::LOCK_SECONDS);

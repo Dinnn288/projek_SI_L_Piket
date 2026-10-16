@@ -42,7 +42,13 @@
                         <x-state-badge :value="$user->status" :map="['aktif' => ['badge-aktif', 'Aktif'], 'nonaktif' => ['badge-nonaktif', 'Nonaktif']]" />
                     </td>
                     <td>{{ $user->created_at?->format('d M Y') }}</td>
-                    <td class="sl-actions"><x-admin-action-menu :editUrl="route('admin.users.edit', $user)" :deleteAction="route('admin.users.destroy', $user)" deleteConfirm="Apakah Anda yakin ingin menghapus user ini?" /></td>
+                    <td class="sl-actions">
+                        @if ($user->role === 'admin')
+                            <x-admin-action-menu :editUrl="route('admin.users.edit', $user)" />
+                        @else
+                            <x-admin-action-menu :editUrl="route('admin.users.edit', $user)" :deleteAction="route('admin.users.destroy', $user)" :deleteConfirm="$user->role === 'guru' ? ('Hapus akun guru ' . $user->name . ' (' . $user->username . ', ' . $user->status . ')? Akun tidak dapat digunakan untuk login setelah dihapus. Semua jadwal piket milik guru ini ikut dihapus; jadwal guru lain tidak terpengaruh. Laporan dan histori penanganan tidak ikut dihapus.') : ('Hapus akun ' . $user->name . ' (' . $user->username . ', ' . $user->role . ', ' . $user->status . ')? Akun tidak dapat digunakan untuk login setelah dihapus. Laporan dan histori penanganan tetap dipertahankan sesuai aturan penyimpanan.')" />
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>

@@ -150,8 +150,9 @@
             });
         });
         // Cegah double-submit pada form mutasi (kecuali logout yang
-        // memakai modal konfirmasi sendiri) agar tidak ada aksi ganda.
-        document.querySelectorAll('form[method="POST"]:not(.sl-logout)').forEach(function (form) {
+        // memakai modal konfirmasi sendiri, dan form modal WA yang punya
+        // handler kunci sendiri) agar tidak ada aksi ganda.
+        document.querySelectorAll('form[method="POST"]:not(.sl-logout):not([data-sl-wa-form])').forEach(function (form) {
             form.addEventListener('submit', function () {
                 if (form.dataset.slLocked) { event.preventDefault(); return; }
                 form.dataset.slLocked = '1';

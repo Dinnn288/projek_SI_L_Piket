@@ -39,8 +39,9 @@ class SiswaReportStep2Test extends TestCase
         parent::setUp();
         config(['database.default' => 'mysql']);
         DB::purge('mysql');
-        config(['database.connections.mysql.database' => 'si_l_piket']);
+        config(['database.connections.mysql.database' => 'si_l_piket_test']);
         DB::reconnect('mysql');
+        \Tests\TestDatabaseGuard::assertTestDatabaseSafe();
         Storage::fake('local');
 
         $major = Major::firstOrCreate(['name' => 'TEST_MAJOR_F6S2'], ['status' => 'aktif']);
@@ -62,8 +63,9 @@ class SiswaReportStep2Test extends TestCase
         try {
             config(['database.default' => 'mysql']);
             DB::purge('mysql');
-            config(['database.connections.mysql.database' => 'si_l_piket']);
+            config(['database.connections.mysql.database' => 'si_l_piket_test']);
             DB::reconnect('mysql');
+            \Tests\TestDatabaseGuard::assertTestDatabaseSafe();
             $sids = Student::whereIn('nis', ['F6S2NIS_A', 'F6S2NIS_B'])->pluck('id');
             $rids = Report::whereIn('student_id', $sids)->pluck('id');
             if ($rids->isNotEmpty()) {

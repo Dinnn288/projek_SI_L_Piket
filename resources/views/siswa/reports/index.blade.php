@@ -9,6 +9,12 @@
         <a href="{{ route('siswa.reports.create') }}" class="btn">Buat Laporan</a>
     </div>
     <p class="muted text-sm mt-1">Kelas: {{ $student->schoolClass?->name ?? '-' }} | NIS: {{ $student->nis }}</p>
+    @if (session('warning'))
+        <p style="margin-top: 10px; color: #b7791f; font-weight: 600;">{{ session('warning') }}</p>
+    @endif
+    @if (session('success'))
+        <p style="margin-top: 10px; color: #1e8449; font-weight: 600;">{{ session('success') }}</p>
+    @endif
     @if ($reports->isEmpty())
         <p style="color: #7f8c8d; margin-top: 16px;">Belum ada laporan. <a href="{{ route('siswa.reports.create') }}">Buat Laporan</a></p>
     @else

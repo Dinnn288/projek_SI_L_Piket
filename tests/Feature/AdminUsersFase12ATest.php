@@ -17,8 +17,9 @@ class AdminUsersFase12ATest extends TestCase
     {
         config(['database.default' => 'mysql']);
         DB::purge('mysql');
-        config(['database.connections.mysql.database' => 'si_l_piket']);
+        config(['database.connections.mysql.database' => 'si_l_piket_test']);
         DB::reconnect('mysql');
+        \Tests\TestDatabaseGuard::assertTestDatabaseSafe();
     }
 
     protected function setUp(): void
@@ -117,18 +118,28 @@ class AdminUsersFase12ATest extends TestCase
         ])->assertSessionHasErrors('role');
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'X', 'username' => 'f12a_created_1', 'password' => 'password123',
-            'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'invalid',
+            'role' => 'siswa', 'status' => 'invalid',
             'nis' => 'F12ANIS_X1', 'class_id' => $this->ids['class'],
         ])->assertSessionHasErrors('status');
+        // Tanpa password_confirmation tetap valid (satu field password).
         $this->actingAs($this->admin())->post('/admin/users', [
-            'name' => 'X', 'username' => 'f12a_created_1', 'password' => 'password123',
-            'password_confirmation' => 'beda', 'role' => 'siswa', 'status' => 'aktif',
-            'nis' => 'F12ANIS_X2', 'class_id' => $this->ids['class'],
+            'name' => 'X', 'username' => 'f12a_created_noconfirm', 'password' => 'password123',
+            'role' => 'admin', 'status' => 'aktif',
+        ])->assertRedirect(route('admin.users.index'));
+        $noConfirm = UserBaru::where('username', 'f12a_created_noconfirm')->firstOrFail();
+        $this->assertTrue(Hash::check('password123', $noConfirm->password));
+        $this->assertNotEquals('password123', $noConfirm->password);
+        $noConfirm->delete();
+        // Password pendek tetap ditolak walau tanpa konfirmasi.
+        $this->actingAs($this->admin())->post('/admin/users', [
+            'name' => 'X', 'username' => 'f12a_created_short', 'password' => 'pendek',
+            'role' => 'admin', 'status' => 'aktif',
         ])->assertSessionHasErrors('password');
+        $this->assertNull(UserBaru::where('username', 'f12a_created_short')->first());
 
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'User Baru F12A', 'username' => 'f12a_created_1', 'password' => 'password123',
-            'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'aktif',
+            'role' => 'siswa', 'status' => 'aktif',
             'nis' => 'F12ANIS001', 'class_id' => $this->ids['class'],
         ])->assertRedirect(route('admin.users.index'));
         $created = UserBaru::where('username', 'f12a_created_1')->firstOrFail();
@@ -138,13 +149,13 @@ class AdminUsersFase12ATest extends TestCase
         // Duplicate ditolak
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'Dup', 'username' => 'f12a_created_1', 'password' => 'password123',
-            'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'aktif',
+            'role' => 'siswa', 'status' => 'aktif',
             'nis' => 'F12ANIS002', 'class_id' => $this->ids['class'],
         ])->assertSessionHasErrors('username');
         // NIS duplikat ditolak
         $this->actingAs($this->admin())->post('/admin/users', [
             'name' => 'Dup NIS', 'username' => 'f12a_created_nis', 'password' => 'password123',
-            'password_confirmation' => 'password123', 'role' => 'siswa', 'status' => 'aktif',
+            'role' => 'siswa', 'status' => 'aktif',
             'nis' => 'F12ANIS001', 'class_id' => $this->ids['class'],
         ])->assertSessionHasErrors('nis');
         $this->assertNull(UserBaru::where('username', 'f12a_created_nis')->first());

@@ -139,6 +139,55 @@ class ReportIdempotencyTest extends TestCase
         ];
     }
 
+    /**
+     * Himpunan penerima sah notifikasi "Laporan Baru" untuk hari uji
+     * (B3.7.2: ekspektasi tidak lagi konstanta 1).
+     *
+     * Dihitung dari sisi Teacher via relasi `dutySchedules` — jalur ORM
+     * berbeda dari controller (yang mulai dari DutySchedule lalu
+     * `->teacher?->user_id`), sehingga tes tidak sekadar menyalin query
+     * produksi. Jangkar independen: `b1_guru` (dibuat setUp ini beserta
+     * duty schedule-nya) wajib ada di himpunan bila ada hari piket.
+     *
+     * @return array<int>
+     */
+    private function expectedNewReportRecipients(): array
+    {
+        $today = GuruDutyService::todayDay();
+
+        if ($today === null) {
+            return [];
+        }
+
+        return Teacher::whereHas('dutySchedules', fn ($q) => $q->where('day', $today))
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Exactly-once per penerima sah untuk satu laporan: himpunan
+     * penerima tepat sama (tanpa kurang, tanpa ekstra, tanpa ganda).
+     */
+    private function assertExactlyOnceNewReportNotification(array $userIds, int $reportId): void
+    {
+        $rows = Notification::where('report_id', $reportId)
+            ->where('title', 'Laporan Baru')
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        sort($rows);
+        $expected = $userIds;
+        sort($expected);
+
+        $this->assertEquals($expected, $rows, 'Penerima notifikasi harus tepat himpunan sah.');
+        $this->assertEquals(count($rows), count(array_unique($rows)), 'Tanpa notifikasi ganda per penerima.');
+    }
+
     public function test_1_normal_submit_creates_one_report(): void
     {
         $siswa = UserBaru::findOrFail($this->ids['siswaA']);
@@ -168,7 +217,13 @@ class ReportIdempotencyTest extends TestCase
         $this->assertEquals(1, $c['reports'], 'Retry key sama tidak boleh duplikat.');
         $this->assertEquals(1, $c['attachments']);
         if ($this->ids['hasDuty']) {
-            $this->assertEquals(1, Notification::where('title', 'Laporan Baru')->whereIn('report_id', Report::where('student_id', $siswa->student->id)->pluck('id'))->count(), 'Notifikasi hanya sekali.');
+            // B3.7.2: ekspektasi dari himpunan penerima sah (termasuk duty
+            // global suite lain + b1_guru), dengan jangkar independen.
+            $expected = $this->expectedNewReportRecipients();
+            $this->assertContains($this->ids['guru'], $expected, 'Jangkar: b1_guru wajib piket hari ini.');
+            $this->assertNotEmpty($expected, 'Harus ada penerima sah bila ada hari piket.');
+            $repId = Report::where('student_id', $siswa->student->id)->value('id');
+            $this->assertExactlyOnceNewReportNotification($expected, (int) $repId);
         }
     }
 
@@ -271,9 +326,153 @@ class ReportIdempotencyTest extends TestCase
         $rep = Report::where('student_id', $siswa->student->id)->firstOrFail();
         // Tidak ada history created (perilaku existing dipertahankan).
         $this->assertEquals(0, ReportHistory::where('report_id', $rep->id)->count());
-        // Notifikasi Laporan Baru tepat satu bila ada guru piket hari ini.
+        // B3.7.2: exactly-once per penerima sah (bukan konstanta 1).
         if ($this->ids['hasDuty']) {
-            $this->assertEquals(1, Notification::where('report_id', $rep->id)->where('title', 'Laporan Baru')->count());
+            $expected = $this->expectedNewReportRecipients();
+            $this->assertContains($this->ids['guru'], $expected, 'Jangkar: b1_guru wajib piket hari ini.');
+            $this->assertNotEmpty($expected, 'Harus ada penerima sah bila ada hari piket.');
+            $this->assertExactlyOnceNewReportNotification($expected, (int) $rep->id);
         }
+    }
+
+    public function test_11_marker_store_failure_keeps_report_and_warns(): void
+    {
+        // Tahap B1-fix: put marker gagal setelah commit -> laporan tetap
+        // tersimpan (TIDAK dihapus), user diarahkan ke index dengan warning
+        // agar memeriksa daftar sebelum kirim ulang, lock tetap dilepas.
+        // Simulasi di level store (bukan mock facade) agar middleware sesi
+        // yang memakai Cache tetap berjalan normal.
+        $siswa = UserBaru::findOrFail($this->ids['siswaA']);
+        $key = (string) Str::uuid();
+
+        $store = Cache::getStore();
+        $failing = new class($store) extends \Illuminate\Cache\Repository
+        {
+            public bool $failedOnce = false;
+
+            public function __construct($store)
+            {
+                parent::__construct($store);
+            }
+
+            public function put($key, $value, $ttl = null): mixed
+            {
+                if (! $this->failedOnce && is_string($key) && str_starts_with($key, 'report_submit:')) {
+                    $this->failedOnce = true;
+
+                    throw new \RuntimeException('cache down');
+                }
+
+                return parent::put($key, $value, $ttl);
+            }
+        };
+        Cache::swap($failing);
+
+        try {
+            $res = $this->actingAs($siswa)->post('/siswa/laporan', $this->payload('B1-MarkerFail', $key));
+        } finally {
+            Cache::swap(new \Illuminate\Cache\Repository($store));
+        }
+        $res->assertRedirect(route('siswa.reports.index'));
+        $res->assertSessionHas('warning');
+        $this->assertEquals(1, $this->counts($siswa->student->id)['reports'], 'Laporan sukses TIDAK boleh dihapus.');
+        $this->assertEquals(1, $this->counts($siswa->student->id)['attachments']);
+    }
+
+    public function test_12_marker_verify_readback_failure_warns(): void
+    {
+        // put gagal (atau baca-ulang gagal) -> warning, laporan tetap ada.
+        // Catatan: get yang gagal pada replay-check ditangani sebagai tanpa
+        // marker (request diproses), sehingga skenario ini memaksa put gagal.
+        $siswa = UserBaru::findOrFail($this->ids['siswaA']);
+        $key = (string) Str::uuid();
+
+        $store = Cache::getStore();
+        $failingPut = new class($store) extends \Illuminate\Cache\Repository
+        {
+            public function __construct($store)
+            {
+                parent::__construct($store);
+            }
+
+            public function put($key, $value, $ttl = null): mixed
+            {
+                if (is_string($key) && str_starts_with($key, 'report_submit:') && ! str_ends_with($key, ':lock')) {
+                    throw new \RuntimeException('cache write down');
+                }
+
+                return parent::put($key, $value, $ttl);
+            }
+        };
+        Cache::swap($failingPut);
+
+        try {
+            $res = $this->actingAs($siswa)->post('/siswa/laporan', $this->payload('B1-VerifyFail', $key));
+        } finally {
+            Cache::swap(new \Illuminate\Cache\Repository($store));
+        }
+        $res->assertRedirect(route('siswa.reports.index'));
+        $res->assertSessionHas('warning');
+        $this->assertEquals(1, $this->counts($siswa->student->id)['reports']);
+        $this->assertNull(ReportIdempotency::result($siswa->id, $key), 'Marker gagal tidak boleh pura-pura ada.');
+    }
+
+    public function test_12b_cache_read_failure_on_replay_is_safe(): void
+    {
+        // get gagal saat replay-check -> request diproses aman (bukan 500).
+        $siswa = UserBaru::findOrFail($this->ids['siswaA']);
+        $key = (string) Str::uuid();
+
+        $store = Cache::getStore();
+        $failingGet = new class($store) extends \Illuminate\Cache\Repository
+        {
+            public bool $failedOnce = false;
+
+            public function __construct($store)
+            {
+                parent::__construct($store);
+            }
+
+            public function get($key, $default = null): mixed
+            {
+                if (! $this->failedOnce && is_string($key) && str_starts_with($key, 'report_submit:')) {
+                    $this->failedOnce = true;
+
+                    throw new \RuntimeException('cache read down');
+                }
+
+                return parent::get($key, $default);
+            }
+        };
+        Cache::swap($failingGet);
+
+        try {
+            $res = $this->actingAs($siswa)->post('/siswa/laporan', $this->payload('B1-ReadFail', $key));
+        } finally {
+            Cache::swap(new \Illuminate\Cache\Repository($store));
+        }
+        // Diproses sebagai pengiriman baru (aman, tanpa 500); laporan ada.
+        $res->assertRedirect();
+        $this->assertEquals(1, $this->counts($siswa->student->id)['reports']);
+    }
+
+    public function test_13_lock_timeout_returns_retryable_error(): void
+    {
+        // Lock gagal diperoleh -> error idempotency_key + input dipertahankan,
+        // tanpa laporan baru. Simulasi dengan menahan lock dari "proses lain".
+        $siswa = UserBaru::findOrFail($this->ids['siswaA']);
+        $key = (string) Str::uuid();
+
+        $holder = \App\Support\ReportIdempotency::lock($siswa->id, $key);
+        $this->assertTrue($holder->acquire(), 'Prekondisi: lock harus bisa dipegang.');
+
+        try {
+            $res = $this->actingAs($siswa)->post('/siswa/laporan', $this->payload('B1-LockTimeout', $key));
+        } finally {
+            $holder->release();
+        }
+        // Controller menunggu hingga 10 detik lalu 422; tanpa laporan baru.
+        $res->assertSessionHasErrors('idempotency_key');
+        $this->assertEquals(0, $this->counts($siswa->student->id)['reports']);
     }
 }

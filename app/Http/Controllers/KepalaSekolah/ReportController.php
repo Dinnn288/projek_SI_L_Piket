@@ -8,11 +8,11 @@ use App\Models\Report;
 use App\Models\ReportAttachment;
 use App\Models\ReportHistory;
 use App\Models\Teacher;
+use App\Support\SecureAttachment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -79,13 +79,14 @@ class ReportController extends Controller
 
         $this->authorizeReport($report);
 
-        $absolutePath = Storage::disk('local')->path($attachment->file_patch);
+        // B3.5: path dikungkung di reports/ + MIME isi-file + header aman.
+        $resolved = SecureAttachment::resolve($attachment->file_patch);
 
-        if (! is_file($absolutePath)) {
+        if ($resolved === null) {
             abort(404);
         }
 
-        return response()->file($absolutePath);
+        return SecureAttachment::response($resolved);
     }
 
     public function complete(Request $request, Report $report): RedirectResponse

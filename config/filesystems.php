@@ -33,7 +33,11 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // B3.7: matikan penyajian file otomatis framework untuk disk
+            // privat. Lampiran hanya disajikan via endpoint terotorisasi
+            // (SecureAttachment B3.5); tidak ada penerbit signed-URL di
+            // kode aplikasi, sehingga route storage/{path} tidak dibutuhkan.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
