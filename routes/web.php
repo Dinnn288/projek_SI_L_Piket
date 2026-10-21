@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ClassDutyScheduleController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DutyScheduleController;
 use App\Http\Controllers\Admin\MajorController;
@@ -12,10 +13,12 @@ use App\Http\Controllers\Admin\SchoolClassController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Guru\ClassDutyController as GuruClassDutyController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\ReportController as GuruReportController;
 use App\Http\Controllers\KepalaSekolah\DashboardController as KepalaSekolahDashboardController;
 use App\Http\Controllers\KepalaSekolah\ReportController as KepalaSekolahReportController;
+use App\Http\Controllers\Siswa\ClassDutyController as SiswaClassDutyController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Siswa\ReportController as SiswaReportController; 
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +63,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('students', StudentController::class)->except(['show']);
     Route::resource('teachers', TeacherController::class)->except(['show']);
     Route::resource('duty-schedules', DutyScheduleController::class)->except(['show']);
+    Route::resource('class-duty-schedules', ClassDutyScheduleController::class)->except(['show']);
     Route::resource('report-categories', ReportCategoryController::class)->except(['show']);
 
     Route::get('/profil', [ProfileController::class, 'show'])->name('profile.show');
@@ -77,6 +81,11 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:siswa')->prefix('siswa')->name('siswa.')->group(function () {
         Route::get('/', [SiswaDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/piket-kelas', [SiswaClassDutyController::class, 'index'])->name('class-duty.index');
+        Route::get('/piket-kelas/lapor', [SiswaClassDutyController::class, 'create'])->name('class-duty.create');
+        Route::post('/piket-kelas', [SiswaClassDutyController::class, 'store'])->name('class-duty.store');
+        Route::post('/piket-kelas/{classDutyReport}/kirim-ulang', [SiswaClassDutyController::class, 'resubmit'])->name('class-duty.resubmit');
+        Route::get('/piket-kelas/{classDutyReport}/lampiran/{attachment}', [SiswaClassDutyController::class, 'attachment'])->name('class-duty.attachment');
         Route::get('/laporan', [SiswaReportController::class, 'index'])->name('reports.index');
         Route::get('/laporan/create', [SiswaReportController::class, 'create'])->name('reports.create');
         Route::post('/laporan', [SiswaReportController::class, 'store'])->name('reports.store');
@@ -90,6 +99,12 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:guru')->prefix('guru')->name('guru.')->group(function () {
         Route::get('/', [GuruDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/piket-kelas', [GuruClassDutyController::class, 'index'])->name('class-duty.index');
+        Route::get('/piket-kelas/kelas/{class}', [GuruClassDutyController::class, 'show'])->name('class-duty.show');
+        Route::get('/piket-kelas/laporan/{classDutyReport}', [GuruClassDutyController::class, 'reportDetail'])->name('class-duty.report');
+        Route::get('/piket-kelas/laporan/{classDutyReport}/lampiran/{attachment}', [GuruClassDutyController::class, 'attachment'])->name('class-duty.attachment');
+        Route::post('/piket-kelas/laporan/{classDutyReport}/setujui', [GuruClassDutyController::class, 'approve'])->name('class-duty.approve');
+        Route::post('/piket-kelas/laporan/{classDutyReport}/kembalikan', [GuruClassDutyController::class, 'returnToStudent'])->name('class-duty.return');
         Route::get('/laporan', [GuruReportController::class, 'index'])->name('reports.index');
         Route::get('/laporan/{report}', [GuruReportController::class, 'show'])->name('reports.show');
         Route::get('/laporan/{report}/attachment/{attachment}', [GuruReportController::class, 'attachment'])->name('reports.attachment');

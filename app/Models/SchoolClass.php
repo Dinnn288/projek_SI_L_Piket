@@ -40,4 +40,19 @@ class SchoolClass extends Model
     {
         return $this->hasMany(Report::class, 'class_id');
     }
+
+    public function classDutySchedules(): HasMany
+    {
+        return $this->hasMany(ClassDutySchedule::class, 'class_id');
+    }
+
+    public function classDutyReports(): HasMany
+    {
+        return $this->hasMany(ClassDutyReport::class, 'class_id');
+    }
+
+    public function classDutyStudentSchedules(): HasMany
+    {
+        return $this->hasMany(ClassDutyStudentSchedule::class, 'class_id');
+    }
 }

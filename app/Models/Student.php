@@ -41,4 +41,14 @@ class Student extends Model
     {
         return $this->hasMany(Report::class, 'student_id');
     }
+
+    public function classDutyReports(): HasMany
+    {
+        return $this->hasMany(ClassDutyReport::class, 'student_id');
+    }
+
+    public function classDutyStudentSchedules(): HasMany
+    {
+        return $this->hasMany(ClassDutyStudentSchedule::class, 'student_id');
+    }
 }

@@ -17,6 +17,20 @@ class NotificationController extends Controller
         $role = $request->user()->role;
 
         if ($notification->report_id === null) {
+            // Notifikasi piket kelas (tanpa report_id): arahkan ke halaman
+            // piket kelas masing-masing role bila judulnya cocok.
+            $title = (string) ($notification->title ?? '');
+
+            if (str_starts_with($title, 'Laporan Piket')) {
+                return match ($role) {
+                    'siswa' => route('siswa.class-duty.index'),
+                    'guru' => route('guru.class-duty.index'),
+                    'admin' => route('admin.dashboard'),
+                    'kepala_sekolah' => route('kepala-sekolah.dashboard'),
+                    default => route('login'),
+                };
+            }
+
             return match ($role) {
                 'admin' => route('admin.dashboard'),
                 'siswa' => route('siswa.dashboard'),

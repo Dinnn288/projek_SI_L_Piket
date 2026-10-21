@@ -339,6 +339,14 @@ class UserController extends Controller
                     $blockers[] = 'laporan siswa';
                 }
 
+                if ($student && $student->classDutyReports()->exists()) {
+                    $blockers[] = 'laporan piket kelas';
+                }
+
+                if (\App\Models\ClassDutyReportHistory::where('user_id', $user->id)->exists()) {
+                    $blockers[] = 'riwayat piket kelas';
+                }
+
                 if ($student && ($student->classRepresentatives()->exists() || $student->temporaryReporters()->exists())) {
                     $blockers[] = 'data perwakilan/temporary';
                 }

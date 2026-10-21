@@ -7,6 +7,7 @@
         <nav class="sl-nav">
             <div class="sl-nav-title">Menu</div>
             <a href="{{ route('siswa.dashboard') }}" class="sl-link {{ request()->routeIs('siswa.dashboard') ? 'active' : '' }}">Dashboard</a>
+            <a href="{{ route('siswa.class-duty.index') }}" class="sl-link {{ request()->routeIs('siswa.class-duty*') ? 'active' : '' }}">Piket Kelas</a>
             <a href="{{ route('siswa.reports.index') }}" class="sl-link {{ request()->routeIs('siswa.reports.*') && ! request()->routeIs('siswa.reports.create') ? 'active' : '' }}">Laporan Saya</a>
             <a href="{{ route('siswa.reports.create') }}" class="sl-link {{ request()->routeIs('siswa.reports.create') ? 'active' : '' }}">Buat Laporan</a>
             <form method="POST" action="{{ route('logout') }}" class="sl-logout">

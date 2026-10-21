@@ -114,7 +114,10 @@ class StudentController extends Controller
             'phone' => ['nullable', 'string', 'max:50'],
         ]);
 
-        DB::transaction(function () use ($student, $user, $data) {
+        $oldClassId = $student->class_id;
+        $newClassId = (int) $data['class_id'];
+
+        DB::transaction(function () use ($student, $user, $data, $oldClassId, $newClassId) {
             $user->name = $data['name'];
             $user->username = $data['username'];
             $user->status = $data['status'];
@@ -129,6 +132,13 @@ class StudentController extends Controller
             $student->class_id = $data['class_id'];
             $student->phone = $data['phone'] ?? null;
             $student->save();
+
+            // Hapus jadwal piket siswa untuk kelas lama jika kelas berubah
+            if ($oldClassId !== $newClassId) {
+                \App\Models\ClassDutyStudentSchedule::where('student_id', $student->id)
+                    ->where('class_id', $oldClassId)
+                    ->delete();
+            }
         });
 
         return redirect()->route('admin.students.index')
@@ -139,7 +149,8 @@ class StudentController extends Controller
     {
         $hasRelation = $student->reports()->exists()
             || $student->classRepresentatives()->exists()
-            || $student->temporaryReporters()->exists();
+            || $student->temporaryReporters()->exists()
+            || $student->classDutyReports()->exists();
 
         if ($hasRelation) {
             return back()->with('error', 'Siswa tidak dapat dihapus karena masih memiliki data laporan/relasi sistem.');

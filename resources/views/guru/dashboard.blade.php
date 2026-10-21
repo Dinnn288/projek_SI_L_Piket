@@ -88,6 +88,39 @@
 </div>
 
 <div class="sl-card">
+    <h2 style="font-size: 18px; color: #1a3d5c;">Pemantauan Piket Kelas ({{ $classDate ?? '-' }})</h2>
+    <p class="muted text-sm mt-1">Terjadwal: {{ $scheduledClassCount ?? 0 }} | Belum melapor: {{ $classDutyMissing ?? 0 }} | Menunggu verifikasi: {{ $classDutyWaiting ?? 0 }} | Perlu diperbaiki: {{ $classDutyFix ?? 0 }} | Sudah piket: {{ $classDutyDone ?? 0 }} | <a href="{{ route('guru.class-duty.index') }}">Buka pemantauan seluruh kelas</a></p>
+    @if (($classDutyLatest ?? collect())->isEmpty())
+        <p style="color: #7f8c8d; margin-top: 10px;">Belum ada laporan piket kelas hari ini.</p>
+    @else
+        <div class="table-wrap">
+        <table style="margin-top: 12px;">
+            <thead><tr><th>Kelas</th><th>Perwakilan</th><th>Status</th><th>Dikirim</th><th>Aksi</th></tr></thead>
+            <tbody>
+                @foreach ($classDutyLatest as $dutyReport)
+                    <tr>
+                        <td>{{ $dutyReport->schoolClass?->name }}</td>
+                        <td>{{ $dutyReport->student?->userBaru?->name }}</td>
+                        <td>
+                            @if ($dutyReport->status === 'disetujui')
+                                <span class="badge badge-selesai">Sudah piket</span>
+                            @elseif ($dutyReport->status === 'perlu_diperbaiki')
+                                <span class="badge badge-forward">Perlu diperbaiki</span>
+                            @else
+                                <span class="badge badge-menunggu">Menunggu verifikasi</span>
+                            @endif
+                        </td>
+                        <td>{{ $dutyReport->created_at?->format('d M Y H:i') }}</td>
+                        <td><a href="{{ route('guru.class-duty.report', $dutyReport) }}">Detail</a></td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        </div>
+    @endif
+</div>
+
+<div class="sl-card">
     <h2 style="font-size: 18px; color: #1a3d5c;">Laporan yang saya tangani</h2>
     @if ($mine->isEmpty())
         <p style="color: #7f8c8d; margin-top: 10px;">Belum ada laporan yang Anda ambil.</p>

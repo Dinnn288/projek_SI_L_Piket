@@ -7,6 +7,7 @@ use App\Models\Major;
 use App\Models\SchoolClass;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SchoolClassController extends Controller
@@ -55,7 +56,20 @@ class SchoolClassController extends Controller
             'status' => ['required', 'in:aktif,nonaktif'],
         ]);
 
-        SchoolClass::create($data);
+        DB::transaction(function () use ($data) {
+            $class = SchoolClass::create($data);
+
+            // Auto-create jadwal piket kelas Senin–Jumat untuk kelas baru
+            if ($class->status === 'aktif') {
+                $days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+                foreach ($days as $day) {
+                    \App\Models\ClassDutySchedule::firstOrCreate([
+                        'class_id' => $class->id,
+                        'day' => $day,
+                    ]);
+                }
+            }
+        });
 
         return redirect()->route('admin.classes.index')
             ->with('success', 'Kelas berhasil ditambahkan.');
@@ -90,11 +104,15 @@ class SchoolClassController extends Controller
         $hasRelation = $class->students()->exists()
             || $class->classRepresentatives()->exists()
             || $class->temporaryReporters()->exists()
-            || $class->reports()->exists();
+            || $class->reports()->exists()
+            || $class->classDutyReports()->exists();
 
         if ($hasRelation) {
             return back()->with('error', 'Kelas tidak dapat dihapus karena masih memiliki data terkait dengan sistem.');
         }
+
+        // Hapus jadwal piket kelas (hanya konfigurasi, tidak ada data laporan siswa)
+        $class->classDutySchedules()->delete();
 
         $class->delete();
 

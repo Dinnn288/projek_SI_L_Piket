@@ -14,6 +14,7 @@
             <a href="{{ route('admin.students.index') }}" class="sl-link {{ request()->routeIs('admin.students*') ? 'active' : '' }}">Siswa</a>
             <a href="{{ route('admin.teachers.index') }}" class="sl-link {{ request()->routeIs('admin.teachers*') ? 'active' : '' }}">Guru</a>
             <a href="{{ route('admin.duty-schedules.index') }}" class="sl-link {{ request()->routeIs('admin.duty-schedules*') ? 'active' : '' }}">Jadwal Guru Piket</a>
+            <a href="{{ route('admin.class-duty-schedules.index') }}" class="sl-link {{ request()->routeIs('admin.class-duty-schedules*') ? 'active' : '' }}">Jadwal Piket Kelas</a>
             <a href="{{ route('admin.report-categories.index') }}" class="sl-link {{ request()->routeIs('admin.report-categories*') ? 'active' : '' }}">Kategori &amp; Prioritas</a>
             <form method="POST" action="{{ route('logout') }}" class="sl-logout">
                 @csrf

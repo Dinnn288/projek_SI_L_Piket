@@ -7,6 +7,7 @@
         <nav class="sl-nav">
             <div class="sl-nav-title">Menu</div>
             <a href="{{ route('guru.dashboard') }}" class="sl-link {{ request()->routeIs('guru.dashboard') ? 'active' : '' }}">Dashboard</a>
+            <a href="{{ route('guru.class-duty.index') }}" class="sl-link {{ request()->routeIs('guru.class-duty*') ? 'active' : '' }}">Piket Kelas</a>
             <a href="{{ route('guru.reports.index') }}" class="sl-link {{ request()->routeIs('guru.reports.*') ? 'active' : '' }}">Laporan Piket</a>
             <form method="POST" action="{{ route('logout') }}" class="sl-logout">
                 @csrf

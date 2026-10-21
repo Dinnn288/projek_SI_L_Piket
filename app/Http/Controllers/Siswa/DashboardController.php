@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Student;
+use App\Services\ClassDutyService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -42,6 +43,12 @@ class DashboardController extends Controller
             ->where('is_read', false)
             ->count();
 
-        return view('siswa.dashboard', compact('student', 'total', 'menunggu', 'diproses', 'selesai', 'latest', 'notifications', 'unreadCount'));
+        $classDay = ClassDutyService::todayDay();
+        $classDate = ClassDutyService::todayDate();
+        $classScheduled = ClassDutyService::isScheduled((int) $student->class_id, $classDay);
+        $classStatus = ClassDutyService::statusFor((int) $student->class_id, $classDate, $classDay);
+        $classReport = ClassDutyService::reportFor((int) $student->class_id, $classDate);
+
+        return view('siswa.dashboard', compact('student', 'total', 'menunggu', 'diproses', 'selesai', 'latest', 'notifications', 'unreadCount', 'classDay', 'classDate', 'classScheduled', 'classStatus', 'classReport'));
     }
 }

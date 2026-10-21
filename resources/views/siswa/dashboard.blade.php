@@ -20,6 +20,30 @@
 </div>
 
 <div class="sl-card">
+    <h3>Piket Kelas Hari Ini ({{ $classDate ?? '-' }})</h3>
+    <p style="color:var(--muted);margin-top:4px;">Jadwal:
+        @if ($classScheduled ?? false)
+            <span class="badge badge-aktif">Terjadwal</span>
+        @else
+            <span class="badge badge-nonaktif">Tidak dijadwalkan</span>
+        @endif
+        | Status:
+        @if (($classStatus ?? '') === 'sudah_piket')
+            <span class="badge badge-selesai">Sudah piket</span>
+        @elseif (($classStatus ?? '') === 'menunggu_verifikasi')
+            <span class="badge badge-menunggu">Menunggu verifikasi</span>
+        @elseif (($classStatus ?? '') === 'perlu_diperbaiki')
+            <span class="badge badge-forward">Perlu diperbaiki</span>
+        @elseif (($classStatus ?? '') === 'belum_melapor')
+            <span class="badge badge-proses">Belum melapor</span>
+        @else
+            <span class="badge badge-nonaktif">Tidak dijadwalkan</span>
+        @endif
+        <a href="{{ route('siswa.class-duty.index') }}" style="margin-left: 8px;">Buka Piket Kelas</a>
+    </p>
+</div>
+
+<div class="sl-card">
     <h3>🔔 Notifikasi ({{ $unreadCount ?? 0 }} belum dibaca)</h3>
     @if (($notifications ?? collect())->isEmpty())
         <p class="empty">Belum ada notifikasi.</p>

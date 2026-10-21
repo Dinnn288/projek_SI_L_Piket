@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassDutyReport;
+use App\Models\ClassDutySchedule;
 use App\Models\Notification;
 use App\Models\Report;
+use App\Models\SchoolClass;
 use App\Models\Teacher;
+use App\Services\ClassDutyService;
 use App\Services\GuruDutyService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -71,11 +75,32 @@ class DashboardController extends Controller
 
         $serverNow = GuruDutyService::now();
 
+        // Ringkasan piket kelas tanggal berjalan (data aktual, tanpa angka statis).
+        $classDate = ClassDutyService::todayDate();
+        $classDay = ClassDutyService::todayDay();
+        $scheduledClassCount = $classDay === null
+            ? 0
+            : ClassDutySchedule::where('day', $classDay)->count();
+        $classDutyWaiting = ClassDutyReport::where('report_date', $classDate)
+            ->where('status', ClassDutyReport::STATUS_MENUNGGU)->count();
+        $classDutyFix = ClassDutyReport::where('report_date', $classDate)
+            ->where('status', ClassDutyReport::STATUS_PERBAIKI)->count();
+        $classDutyDone = ClassDutyReport::where('report_date', $classDate)
+            ->where('status', ClassDutyReport::STATUS_DISETUJUI)->count();
+        $classDutyMissing = max(0, $scheduledClassCount - ($classDutyWaiting + $classDutyFix + $classDutyDone));
+        $classDutyLatest = ClassDutyReport::where('report_date', $classDate)
+            ->with(['schoolClass', 'student.userBaru'])
+            ->latest()
+            ->take(5)
+            ->get();
+
         return view('guru.dashboard', compact(
             'teacher', 'day', 'onDutyDay',
             'waiting', 'waitingCount', 'continued', 'continuedCount',
             'mine', 'mineActive', 'mineTotal', 'notifications', 'unreadCount',
-            'serverNow'
+            'serverNow', 'classDate', 'classDay', 'scheduledClassCount',
+            'classDutyWaiting', 'classDutyFix', 'classDutyDone', 'classDutyMissing',
+            'classDutyLatest'
         ));
     }
 }

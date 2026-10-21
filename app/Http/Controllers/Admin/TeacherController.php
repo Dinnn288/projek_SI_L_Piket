@@ -149,6 +149,12 @@ class TeacherController extends Controller
             return back()->with('error', 'Guru tidak dapat dihapus karena masih menangani laporan aktif.');
         }
 
+        // Verifikasi piket kelas: FK SET NULL tetapi riwayat keputusan
+        // harus dipertahankan — tolak bila masih menjadi verifikator.
+        if (\App\Models\ClassDutyReport::where('verified_by_teacher_id', $teacher->id)->exists()) {
+            return back()->with('error', 'Guru tidak dapat dihapus karena masih tercatat sebagai verifikator laporan piket kelas.');
+        }
+
         DB::transaction(function () use ($teacher) {
             $userId = $teacher->user_id;
             // Laporan selesai → FK SET NULL: biarkan DB men-set NULL.
